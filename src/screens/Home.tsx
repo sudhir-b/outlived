@@ -18,16 +18,19 @@ function Hero({ next, total, passed }: { next: Outlive | undefined; total: numbe
     return (
       <View style={styles.hero}>
         <Label>SCOREBOARD</Label>
-        <Text style={styles.big} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{passed}</Text>
+        <Text style={styles.big}>{passed}</Text>
         <P style={{ color: C.muted }}>of {total} outlasted. You've beaten everyone on your list.</P>
       </View>
     );
   }
   const d = next.daysAway;
+  const text = d === 0 ? "Today" : d.toLocaleString();
+  // Four digits plus a comma no longer fit at 128pt on a 390pt-wide phone, so step down by length.
+  const size = text.length <= 3 ? 128 : text.length <= 6 ? 96 : 72;
   return (
     <View style={styles.hero}>
       <Label>NEXT UP</Label>
-      <Text style={styles.big} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{d === 0 ? "Today" : d.toLocaleString()}</Text>
+      <Text style={[styles.big, { fontSize: size, lineHeight: size }]}>{text}</Text>
       <P style={{ color: C.muted, marginTop: 6 }}>{d === 0 ? "you outlast" : d === 1 ? "day until you outlast" : "days until you outlast"}</P>
       <Text style={styles.name}>{next.person.name}</Text>
       <Muted style={{ marginTop: 6 }}>
