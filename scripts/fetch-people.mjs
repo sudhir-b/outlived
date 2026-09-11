@@ -127,17 +127,24 @@ const byId = new Map();
 for (const r of rows) {
   const id = r.p.value.split("/").pop();
   let e = byId.get(id);
+  const bp = Number(r.birthPrec.value), dp = Number(r.deathPrec.value);
   if (!e) {
-    const b = parseTime(r.birth.value), d = parseTime(r.death.value);
-    const prec = Math.min(Number(r.birthPrec.value), Number(r.deathPrec.value));
     e = {
       id, name: r.pLabel.value, desc: (r.desc?.value ?? "").slice(0, 80),
-      birth: b, death: d, precision: prec >= 11 ? "day" : prec === 10 ? "month" : "year",
+      birth: parseTime(r.birth.value), birthPrec: bp, death: parseTime(r.death.value), deathPrec: dp,
       sitelinks: sitelinksById.get(id) ?? 0, pantheon: pantheonById.get(id), occupations: new Set(),
     };
     byId.set(id, e);
+  } else {
+    // Several claims per date are common; keep the most precise one for each.
+    if (bp > e.birthPrec) { e.birth = parseTime(r.birth.value); e.birthPrec = bp; }
+    if (dp > e.deathPrec) { e.death = parseTime(r.death.value); e.deathPrec = dp; }
   }
   if (r.occLabel) e.occupations.add(r.occLabel.value.toLowerCase());
+}
+for (const e of byId.values()) {
+  const prec = Math.min(e.birthPrec, e.deathPrec);
+  e.precision = prec >= 11 ? "day" : prec === 10 ? "month" : "year";
 }
 
 const people = [...byId.values()]

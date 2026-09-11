@@ -1,0 +1,19 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Current — Home", "x": 0, "y": 0, "w": 390, "h": 844 },
+    { "file": "CurrentPick.dc.html", "title": "Current — Choose people", "x": 0, "y": 964, "w": 390, "h": 844 },
+    { "file": "AlmanacHome.dc.html", "title": "A · Almanac — Home", "x": 470, "y": 0, "w": 390, "h": 844 },
+    { "file": "AlmanacPick.dc.html", "title": "A · Almanac — Choose people", "x": 470, "y": 964, "w": 390, "h": 844 },
+    { "file": "CountdownHome.dc.html", "title": "B · Countdown — Home", "x": 940, "y": 0, "w": 390, "h": 844 },
+    { "file": "CountdownPick.dc.html", "title": "B · Countdown — Choose people", "x": 940, "y": 964, "w": 390, "h": 844 },
+    { "file": "ScoreboardHome.dc.html", "title": "C · Scoreboard — Home", "x": 1410, "y": 0, "w": 390, "h": 844 },
+    { "file": "ScoreboardPick.dc.html", "title": "C · Scoreboard — Choose people", "x": 1410, "y": 964, "w": 390, "h": 844 }
+  ],
+  "annotations": [
+    { "id": "current-note", "x": 0, "y": -230, "w": 390, "text": "CURRENT (as built)\nWarm cream, system font, cards with initials. Solid and readable, but the emoji chips and gear read a little childish, and the cards repeat the same three lines for every person." },
+    { "id": "almanac-note", "x": 470, "y": -230, "w": 390, "text": "A · ALMANAC\nEditorial serif, hairline rules, a ledger instead of cards. Leads with the one thing the app never says today: how long he has actually lived. Calm, bookish, suits the obituary-page wit.\nTradeoff: less scannable at a glance, and serif at 15px needs care on older eyes." },
+    { "id": "countdown-note", "x": 940, "y": -230, "w": 390, "text": "B · COUNTDOWN\nDark, one giant number, amber accent. The next milestone becomes the whole screen; the list is a quiet tally underneath. Punchy and celebratory, readable from across the room.\nTradeoff: dark themes are harder for 60+ eyes in daylight, and counting down frames the wait rather than the wins." },
+    { "id": "scoreboard-note", "x": 1410, "y": -230, "w": 390, "text": "C · SCOREBOARD\nLifespans drawn as bars with a dashed line for his age: you can see who he has passed and how far the next one is without reading a date. Theme tiles replace the scrolling chip row (bigger targets, shows counts).\nTradeoff: busiest of the three; ancient figures with rough dates get a misleadingly precise bar." }
+  ],
+  "launch": { "view": "canvas" }
+}
