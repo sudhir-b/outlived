@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, C, H1, Initials, Muted, Screen } from "../ui";
 import { PEOPLE, Person, THEMES, randomPeople } from "../lib/people";
 import { formatYear } from "../lib/dates";
@@ -21,6 +21,12 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
     const next = new Set(picks);
     next.has(id) ? next.delete(id) : next.add(id);
     onChange(next);
+  };
+  const clearAll = () => {
+    Alert.alert("Remove everyone?", `This removes all ${picks.size} people from your list.`, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Remove all", style: "destructive", onPress: () => { onChange(new Set()); setTheme(null); } },
+    ]);
   };
   const surprise = () => {
     const next = new Set(picks);
@@ -48,6 +54,7 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: "center" }} style={{ flexGrow: 0, height: 56, marginBottom: 6 }}>
         <Chip label="🎲 Surprise me" active={false} onPress={surprise} />
         <Chip label={`✅ Picked`} active={theme === "picked"} onPress={() => setTheme(theme === "picked" ? null : "picked")} />
+        {picks.size > 0 && <Chip label="🗑️ Clear all" active={false} onPress={clearAll} />}
         {THEMES.map((t) => (
           <Chip key={t.key} label={`${t.emoji} ${t.label}`} active={theme === t.key} onPress={() => setTheme(theme === t.key ? null : t.key)} />
         ))}
