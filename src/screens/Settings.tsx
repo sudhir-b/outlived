@@ -22,7 +22,7 @@ export function Settings({
       <H2 style={{ marginTop: 28 }}>Reminder time</H2>
       <Muted>On the day you outlive someone, you'll get a notification at this time.</Muted>
       <View style={{ backgroundColor: C.card, borderRadius: 14, marginTop: 10, alignItems: Platform.OS === "ios" ? "flex-start" : "stretch" }}>
-        <DateTimePicker value={time} mode="time" display={Platform.OS === "ios" ? "compact" : "default"} onChange={(_, d) => d && onChangeTime(d.getHours(), d.getMinutes())} />
+        <DateTimePicker value={time} mode="time" display={Platform.OS === "ios" ? "compact" : "default"} onValueChange={(_, d) => onChangeTime(d.getHours(), d.getMinutes())} />
       </View>
       <Muted style={{ marginTop: 10 }}>
         {permission ? `${scheduled} reminder${scheduled === 1 ? "" : "s"} scheduled (up to 64 at a time).` : "Notifications are off."}

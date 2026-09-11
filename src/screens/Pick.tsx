@@ -45,7 +45,7 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
         clearButtonMode="while-editing"
         autoCorrect={false}
       />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }} style={{ flexGrow: 0, marginBottom: 10 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: "center" }} style={{ flexGrow: 0, height: 56, marginBottom: 6 }}>
         <Chip label="🎲 Surprise me" active={false} onPress={surprise} />
         <Chip label={`✅ Picked`} active={theme === "picked"} onPress={() => setTheme(theme === "picked" ? null : "picked")} />
         {THEMES.map((t) => (

@@ -20,3 +20,11 @@ npx expo run:ios            # builds and opens the iOS Simulator
 ## Release
 
 See `RELEASE.md`.
+
+## Gotcha
+
+The iOS 27.0 beta Simulator runtime rejects every local notification request (`ERR_NOTIFICATIONS_FAILED_TO_SCHEDULE`). Use an iOS 26.x simulator to test notifications:
+
+```bash
+xcrun simctl create "iPhone 17 (26.5)" com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-26-5
+```

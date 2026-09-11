@@ -10,14 +10,14 @@ export function Onboarding({ initial, onDone, onCancel }: { initial: Civil | nul
     <Screen>
       <H1>When were you born?</H1>
       <Muted style={{ marginTop: 8 }}>Everything else is worked out from this. It stays on your phone.</Muted>
-      <View style={{ marginVertical: 32, backgroundColor: C.card, borderRadius: 16, paddingVertical: 8 }}>
+      <View style={{ marginVertical: 32, backgroundColor: C.card, borderRadius: 16, height: 216, overflow: "hidden", justifyContent: "center" }}>
         <DateTimePicker
           value={date}
           mode="date"
           display="spinner"
           maximumDate={new Date()}
           minimumDate={new Date(1900, 0, 1)}
-          onChange={(_, d) => d && setDate(d)}
+          onValueChange={(_, d) => setDate(d)}
           style={{ height: 216 }}
         />
       </View>

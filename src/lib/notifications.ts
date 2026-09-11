@@ -37,19 +37,33 @@ export async function reschedule(outlives: Outlive[], hour: number, minute: numb
     .filter((o) => toDate(o.date, hour, minute).getTime() > now)
     .slice(0, IOS_LIMIT);
 
+  let count = 0;
   for (const o of upcoming) {
-    await Notifications.scheduleNotificationAsync({
+    try {
+      await schedule(o, hour, minute);
+      count += 1;
+    } catch (e) {
+      console.warn(`Could not schedule ${o.person.name} for ${toDate(o.date, hour, minute).toISOString()}: ${String(e)}`);
+    }
+  }
+  return count;
+}
+
+async function schedule(o: Outlive, hour: number, minute: number): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
       content: {
         title: `You've outlived ${o.person.name}`,
         body: `${o.person.name} died aged ${formatAge(o.lifespan)}. As of today, you've lived longer.`,
         sound: true,
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: toDate(o.date, hour, minute),
-        channelId: "milestones",
+        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+        year: o.date.y,
+        month: o.date.m,
+        day: o.date.d,
+        hour,
+        minute,
+        repeats: false,
       },
-    });
-  }
-  return upcoming.length;
+  });
 }
