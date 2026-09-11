@@ -15,7 +15,7 @@ npx expo run:ios            # builds and opens the iOS Simulator
 
 ## Data
 
-`src/data/people.json` is generated from Wikidata by `node scripts/fetch-people.mjs`. It pulls dead humans with at least 100 Wikipedia sitelinks, with birth/death dates and a rough theme tag from their occupations. Year-only dates are treated as 1 July and shown as approximate.
+`src/data/people.json` is generated from Wikidata by `node scripts/fetch-people.mjs`. It unions two sources: dead humans with at least 100 Wikipedia sitelinks, and the 5,000 most popular dead people in the [Pantheon](https://pantheon.world) dataset (CC BY). Exact dates come from Wikidata; Pantheon supplies the theme (from its occupation field) and the popularity rank. People whose two sources disagree on lifespan by more than two years are dropped unless Wikidata has exact dates. Year-only dates are treated as 1 July and shown as approximate.
 
 ## Release
 

@@ -9,7 +9,7 @@ export type Person = {
   death: Civil;
   precision: Precision;
   themes: string[];
-  sitelinks: number;
+  rank: number;
 };
 
 export const PEOPLE: Person[] = raw as Person[];
@@ -44,8 +44,10 @@ export function computeOutlive(person: Person, dob: Civil, ref: Civil = today())
   return { person, lifespan, date, daysAway: daysBetween(ref, date) };
 }
 
+/** Surprise me draws from the well-known end of the list so picks are people he will have heard of. */
+const SURPRISE_POOL = 1500;
 export function randomPeople(n: number, exclude: Set<string>): Person[] {
-  const pool = PEOPLE.filter((p) => !exclude.has(p.id));
+  const pool = PEOPLE.slice(0, SURPRISE_POOL).filter((p) => !exclude.has(p.id));
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
