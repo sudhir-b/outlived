@@ -23,8 +23,10 @@ See `RELEASE.md`.
 
 ## Gotcha
 
-The iOS 27.0 beta Simulator runtime rejects every local notification request (`ERR_NOTIFICATIONS_FAILED_TO_SCHEDULE`). Use an iOS 26.x simulator to test notifications:
+If every local notification request suddenly fails in the Simulator (`ERR_NOTIFICATIONS_FAILED_TO_SCHEDULE`, and the system log shows `Added notification request: [ hasError: 1 ]`), the simulator's notification daemon is stuck. Shut the device down and boot it again:
 
 ```bash
-xcrun simctl create "iPhone 17 (26.5)" com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-26-5
+xcrun simctl shutdown <udid> && xcrun simctl boot <udid>
 ```
+
+Verified on both the iOS 26.5 and iOS 27.0 runtimes: after a reboot, scheduling and delivery work.
