@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Outlived",
-    "slug": "outlived",
+    "name": "Outlasted",
+    "slug": "outlasted",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sudhirb.outlived",
+      "bundleIdentifier": "com.sudhirb.outlasted",
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -22,13 +22,13 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.sudhirb.outlived"
+      "package": "com.sudhirb.outlasted"
     },
     "plugins": [
       "@react-native-community/datetimepicker",
       "expo-sharing",
       "expo-notifications"
     ],
-    "scheme": "outlived"
+    "scheme": "outlasted"
   }
 }

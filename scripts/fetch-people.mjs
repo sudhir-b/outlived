@@ -3,7 +3,7 @@
 import { writeFileSync } from "node:fs";
 
 const MIN_SITELINKS = 100;
-const UA = { "User-Agent": "outlived-app/1.0 (github.com/sudhir-b/outlived)", Accept: "application/sparql-results+json" };
+const UA = { "User-Agent": "outlasted-app/1.0 (github.com/sudhir-b/outlived)", Accept: "application/sparql-results+json" };
 
 async function sparql(q, attempt = 1) {
   const res = await fetch("https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(q), { headers: UA });

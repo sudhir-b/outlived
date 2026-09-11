@@ -76,7 +76,7 @@ export default function App() {
           onRequestPermission={async () => {
             const ok = await ensurePermission();
             setPermission(ok);
-            if (!ok) Alert.alert("Notifications are off", "Turn them on for Outlived in the iPhone Settings app.");
+            if (!ok) Alert.alert("Notifications are off", "Turn them on for Outlasted in the iPhone Settings app.");
           }}
           onBack={() => setScreen("home")}
         />

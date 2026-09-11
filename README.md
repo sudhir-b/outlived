@@ -1,4 +1,4 @@
-# Outlived
+# Outlasted
 
 A tiny iOS app. Enter your date of birth, pick some famous people, and get a notification on the day you've lived longer than each of them did.
 

@@ -52,7 +52,7 @@ export async function reschedule(outlives: Outlive[], hour: number, minute: numb
 async function schedule(o: Outlive, hour: number, minute: number): Promise<void> {
   await Notifications.scheduleNotificationAsync({
       content: {
-        title: `You've outlived ${o.person.name}`,
+        title: `You've outlasted ${o.person.name}`,
         body: `${o.person.name} died aged ${formatAge(o.lifespan)}. As of today, you've lived longer.`,
         sound: true,
       },

@@ -11,7 +11,7 @@ Each release:
 ```bash
 eas build --platform ios --profile production
 ```
-First run asks you to sign in to Apple and creates certificates and the App Store Connect app record for `com.sudhirb.outlived` automatically. Say yes to everything.
+First run asks you to sign in to Apple and creates certificates and the App Store Connect app record for `com.sudhirb.outlasted` automatically. Say yes to everything.
 
 ```bash
 eas submit --platform ios --latest
@@ -20,7 +20,7 @@ Uploads the build to App Store Connect.
 
 Then in appstoreconnect.apple.com:
 
-1. Open the app, fill in the listing: name "Outlived", subtitle, description, keywords, support URL (your GitHub page is fine), privacy policy URL (a one-line page saying "Outlived stores your date of birth on your device only and sends nothing anywhere").
+1. Open the app, fill in the listing: name "Outlasted", subtitle, description, keywords, support URL (your GitHub page is fine), privacy policy URL (a one-line page saying "Outlasted stores your date of birth on your device only and sends nothing anywhere").
 2. Screenshots: run the app in the iPhone 17 Pro Max Simulator and take screenshots with Cmd+S. You need the 6.9" size only.
 3. App Privacy: choose "Data not collected".
 4. Age rating: fill the questionnaire, everything "None". It's a 4+ app.

@@ -7,7 +7,7 @@ import { Outlive } from "../lib/people";
 function describe(o: Outlive): string {
   const d = -o.daysAway;
   if (d === 0) return "Today! You've now lived longer.";
-  if (d > 0) return `You outlived them on ${formatCivil(o.date)}.`;
+  if (d > 0) return `You outlasted them on ${formatCivil(o.date)}.`;
   const days = o.daysAway;
   if (days < 60) return `In ${days} day${days === 1 ? "" : "s"}, on ${formatCivil(o.date)}.`;
   const years = Math.floor(days / 365.2425);
@@ -43,8 +43,8 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
     <Screen style={{ paddingHorizontal: 0 }}>
       <View style={{ paddingHorizontal: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
         <View>
-          <H1>Outlived</H1>
-          <Muted>Born {formatCivil(dob)} · {passed} of {outlives.length} outlived</Muted>
+          <H1>Outlasted</H1>
+          <Muted>Born {formatCivil(dob)} · {passed} of {outlives.length} outlasted</Muted>
         </View>
         <Pressable onPress={onSettings} hitSlop={12}><Text style={{ fontSize: 28 }}>⚙️</Text></Pressable>
       </View>

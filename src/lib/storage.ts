@@ -8,7 +8,7 @@ export type Settings = {
   notifyMinute: number;
 };
 
-const KEY = "outlived.settings.v1";
+const KEY = "outlasted.settings.v1";
 export const DEFAULTS: Settings = { dob: null, picks: [], notifyHour: 9, notifyMinute: 0 };
 
 export async function loadSettings(): Promise<Settings> {

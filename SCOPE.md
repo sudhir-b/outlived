@@ -1,4 +1,4 @@
-# Outlived — scope (v1)
+# Outlasted — scope (v1)
 
 Gift app for one user. No sign-in, no backend, no running costs.
 
@@ -16,10 +16,10 @@ Gift app for one user. No sign-in, no backend, no running costs.
    - Search by name.
    - "Surprise me" random 10.
 3. Home screen: list of picks sorted by outlive date.
-   - Past: "You outlived Mozart on 12 Mar 2000 (he died at 35y 10m)".
+   - Past: "You outlasted Mozart on 12 Mar 2000 (he died at 35y 10m)".
    - Future: "You'll outlive Churchill on 4 Jun 2051 (in 24 years)".
    - Next one up is highlighted at the top.
-4. On the day: local notification "Today you've outlived Charles Darwin, who died aged 73y 2m."
+4. On the day: local notification "Today you've outlasted Charles Darwin, who died aged 73y 2m."
 5. Settings: change DOB, notification time (default 9am), re-request permission.
 
 ## Core logic
