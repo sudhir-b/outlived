@@ -15,6 +15,7 @@ export function Onboarding({ initial, onDone, onCancel }: { initial: Civil | nul
           value={date}
           mode="date"
           display="spinner"
+          themeVariant="dark"
           maximumDate={new Date()}
           minimumDate={new Date(1900, 0, 1)}
           onValueChange={(_, d) => setDate(d)}

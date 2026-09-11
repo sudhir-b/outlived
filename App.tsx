@@ -56,7 +56,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       {screen === "onboarding" && <Onboarding initial={null} onDone={(dob) => { persist({ ...settings, dob }); setScreen("pick"); }} />}
       {screen === "editDob" && <Onboarding initial={settings.dob} onCancel={() => setScreen("settings")} onDone={(dob) => { persist({ ...settings, dob }); setScreen("settings"); }} />}
       {screen === "home" && settings.dob && <Home dob={settings.dob} outlives={outlives} onPick={() => setScreen("pick")} onSettings={() => setScreen("settings")} />}

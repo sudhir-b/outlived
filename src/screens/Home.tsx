@@ -1,34 +1,67 @@
 import React, { useMemo } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { Button, C, H1, H2, Initials, Muted, P, Screen } from "../ui";
-import { Civil, formatAge, formatCivil, formatYear } from "../lib/dates";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Button, C, Icon, Label, Muted, P, Screen, footer } from "../ui";
+import { Civil, daysBetween, formatAge, formatCivil, today, yearsMonths } from "../lib/dates";
 import { Outlive } from "../lib/people";
 
-function describe(o: Outlive): string {
-  const d = -o.daysAway;
-  if (d === 0) return "Today! You've now lived longer.";
-  if (d > 0) return `You outlasted them on ${formatCivil(o.date)}.`;
-  const days = o.daysAway;
-  if (days < 60) return `In ${days} day${days === 1 ? "" : "s"}, on ${formatCivil(o.date)}.`;
-  const years = Math.floor(days / 365.2425);
-  const months = Math.round((days - years * 365.2425) / 30.4);
-  const when = years > 0 ? `${years} year${years === 1 ? "" : "s"}${months ? ` ${months} mo` : ""}` : `${months} months`;
-  return `In ${when}, on ${formatCivil(o.date)}.`;
+function Hero({ next, total, passed }: { next: Outlive | undefined; total: number; passed: number }) {
+  if (total === 0) {
+    return (
+      <View style={styles.hero}>
+        <Label>NEXT UP</Label>
+        <Text style={styles.name}>Nobody yet</Text>
+        <Muted style={{ marginTop: 6 }}>Choose some famous people and this becomes a countdown to the day you outlast each of them.</Muted>
+      </View>
+    );
+  }
+  if (!next) {
+    return (
+      <View style={styles.hero}>
+        <Label>SCOREBOARD</Label>
+        <Text style={styles.big}>{passed}</Text>
+        <P style={{ color: C.muted }}>of {total} outlasted. You've beaten everyone on your list.</P>
+      </View>
+    );
+  }
+  const d = next.daysAway;
+  return (
+    <View style={styles.hero}>
+      <Label>NEXT UP</Label>
+      <Text style={styles.big}>{d === 0 ? "Today" : d.toLocaleString()}</Text>
+      <P style={{ color: C.muted, marginTop: 6 }}>{d === 0 ? "you outlast" : d === 1 ? "day until you outlast" : "days until you outlast"}</P>
+      <Text style={styles.name}>{next.person.name}</Text>
+      <Muted style={{ marginTop: 6 }}>
+        Died at {formatAge(next.lifespan)}{next.person.precision !== "day" ? " (approx.)" : ""} · you pass them on {formatCivil(next.date)}
+      </Muted>
+    </View>
+  );
 }
 
-function Row({ o }: { o: Outlive }) {
-  const passed = o.daysAway <= 0;
-  const p = o.person;
+function Bar({ o, next, maxDays }: { o: Outlive; next: boolean; maxDays: number }) {
+  const passed = o.daysAway <= 0 && !next;
+  const color = next ? C.accent : passed ? C.good : C.future;
+  const right = next ? (o.daysAway === 0 ? "Today" : `${o.daysAway.toLocaleString()} day${o.daysAway === 1 ? "" : "s"}`) : formatAge(o.lifespan);
   return (
-    <View style={[styles.row, passed && styles.rowPassed]}>
-      <Initials name={p.name} />
-      <View style={{ flex: 1, marginLeft: 14 }}>
-        <Text style={styles.name}>{p.name}</Text>
-        <Muted numberOfLines={1}>{p.desc}</Muted>
-        <Muted style={{ marginTop: 4 }}>
-          {formatYear(p.birth.y)} – {formatYear(p.death.y)} · died aged {formatAge(o.lifespan)}{p.precision !== "day" ? " (approx.)" : ""}
-        </Muted>
-        <Text style={[styles.when, passed && { color: C.good }]}>{describe(o)}</Text>
+    <View style={{ marginBottom: 14 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+        <Text style={styles.rowName} numberOfLines={1}>{o.person.name}</Text>
+        <Text style={[styles.rowRight, { color: next ? C.accent : passed ? C.good : C.muted }]}>{right}</Text>
+      </View>
+      <View style={styles.track}>
+        <View style={[styles.fill, { width: `${Math.min(100, (o.lifespan / maxDays) * 100)}%`, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
+}
+
+function YouLine({ pct, rows }: { pct: number; rows: number }) {
+  // A dashed vertical line drawn from short segments, since single-edge dashed borders are unreliable on iOS.
+  const dashes = Array.from({ length: rows * 8 });
+  return (
+    <View pointerEvents="none" style={[styles.youLine, { left: `${pct}%` }]}>
+      <View style={styles.youPill}><Text style={styles.youText}>YOU</Text></View>
+      <View style={{ flex: 1, overflow: "hidden", alignItems: "center" }}>
+        {dashes.map((_, i) => <View key={i} style={styles.dash} />)}
       </View>
     </View>
   );
@@ -36,51 +69,55 @@ function Row({ o }: { o: Outlive }) {
 
 export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outlives: Outlive[]; onPick: () => void; onSettings: () => void }) {
   const sorted = useMemo(() => [...outlives].sort((a, b) => a.daysAway - b.daysAway), [outlives]);
-  const next = sorted.find((o) => o.daysAway > 0);
-  const passed = sorted.filter((o) => o.daysAway <= 0).length;
+  const next = sorted.find((o) => o.daysAway >= 0);
+  const passed = sorted.filter((o) => o.daysAway < 0).length;
+  const ageDays = daysBetween(dob, today());
+  const age = yearsMonths(dob, today());
+  const maxDays = Math.max(ageDays, ...sorted.map((o) => o.lifespan)) * 1.06;
 
   return (
     <Screen style={{ paddingHorizontal: 0 }}>
-      <View style={{ paddingHorizontal: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <View>
-          <H1>Outlasted</H1>
-          <Muted>Born {formatCivil(dob)} · {passed} of {outlives.length} outlasted</Muted>
-        </View>
-        <Pressable onPress={onSettings} hitSlop={12}><Text style={{ fontSize: 28 }}>⚙️</Text></Pressable>
+      <View style={styles.header}>
+        <Text style={styles.wordmark}>OUTLASTED</Text>
+        <Pressable onPress={onSettings} hitSlop={12}><Icon name="options-outline" size={26} /></Pressable>
       </View>
-
-      {next && (
-        <View style={styles.next}>
-          <Muted style={{ color: C.accent, fontWeight: "700" }}>NEXT UP</Muted>
-          <H2 style={{ marginTop: 4 }}>{next.person.name}</H2>
-          <P>{describe(next)}</P>
-        </View>
-      )}
-
-      <FlatList
-        data={sorted}
-        keyExtractor={(o) => o.person.id}
-        renderItem={({ item }) => <Row o={item} />}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
-        ListEmptyComponent={
-          <View style={{ paddingTop: 40, alignItems: "center" }}>
-            <P style={{ textAlign: "center" }}>No one picked yet.</P>
-            <Muted style={{ textAlign: "center", marginTop: 8 }}>Choose some famous people and we'll tell you the day you outlive each of them.</Muted>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
+        <Hero next={next} total={sorted.length} passed={passed} />
+        {sorted.length > 0 && (
+          <View style={{ marginTop: 34 }}>
+            <View style={styles.sectionHead}>
+              <Label>SCOREBOARD</Label>
+              <Text style={styles.score}><Text style={{ color: C.good }}>{passed}</Text><Text style={{ color: C.muted }}> of {sorted.length}</Text></Text>
+            </View>
+            <Muted style={{ marginBottom: 26 }}>You're {age.years}y {age.months}m. Bars are how long each person lived.</Muted>
+            <View style={{ position: "relative", paddingTop: 22 }}>
+              <YouLine pct={(ageDays / maxDays) * 100} rows={sorted.length} />
+              {sorted.map((o) => <Bar key={o.person.id} o={o} next={o === next} maxDays={maxDays} />)}
+            </View>
           </View>
-        }
-      />
-      <View style={styles.footer}>
-        <Button title={outlives.length ? "Add or remove people" : "Choose people"} onPress={onPick} />
+        )}
+      </ScrollView>
+      <View style={footer}>
+        <Button title={sorted.length ? "Add or remove people" : "Choose people"} onPress={onPick} />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  next: { margin: 20, marginBottom: 12, padding: 18, backgroundColor: C.accentSoft, borderRadius: 18 },
-  row: { flexDirection: "row", backgroundColor: C.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.line },
-  rowPassed: { backgroundColor: C.goodSoft, borderColor: C.goodSoft },
-  name: { fontSize: 20, fontWeight: "700", color: C.text },
-  when: { fontSize: 17, color: C.accent, marginTop: 6, fontWeight: "600" },
-  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36, backgroundColor: C.bg },
+  header: { paddingHorizontal: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 26 },
+  wordmark: { fontSize: 15, fontWeight: "800", color: C.accent, letterSpacing: 2 },
+  hero: {},
+  big: { fontSize: 128, lineHeight: 128, fontWeight: "800", color: C.text, letterSpacing: -5, marginTop: 6, fontVariant: ["tabular-nums"] },
+  name: { fontSize: 34, lineHeight: 38, fontWeight: "800", color: C.text, letterSpacing: -0.5, marginTop: 2 },
+  sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 },
+  score: { fontSize: 22, fontWeight: "800", fontVariant: ["tabular-nums"] },
+  rowName: { fontSize: 17, fontWeight: "700", color: C.text, flexShrink: 1, marginRight: 12 },
+  rowRight: { fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
+  track: { height: 12, borderRadius: 6, backgroundColor: C.track, overflow: "hidden" },
+  fill: { height: 12, borderRadius: 6 },
+  youLine: { position: "absolute", top: 0, bottom: 0, width: 60, marginLeft: -30, alignItems: "center", zIndex: 1 },
+  youPill: { backgroundColor: C.accent, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, marginBottom: 4 },
+  youText: { fontSize: 11, fontWeight: "800", color: C.bg, letterSpacing: 1 },
+  dash: { width: 2, height: 6, backgroundColor: C.accent, marginBottom: 5, borderRadius: 1 },
 });
