@@ -20,13 +20,13 @@ Uploads the build to App Store Connect.
 
 Then in appstoreconnect.apple.com:
 
-1. Open the app, fill in the listing: name "Outlasted", subtitle, description, keywords, support URL (your GitHub page is fine), privacy policy URL (a one-line page saying "Outlasted stores your date of birth on your device only and sends nothing anywhere").
+1. Open the app and fill in the listing. Every field is drafted in `LISTING.md`; the privacy policy is `PRIVACY.md` and its GitHub URL is what goes in the form.
 2. Screenshots: run the app in the iPhone 17 Pro Max Simulator and take screenshots with Cmd+S. You need the 6.9" size only.
 3. App Privacy: choose "Data not collected".
 4. Age rating: fill the questionnaire, everything "None". It's a 4+ app.
 5. Pick the build, submit for review. Reviews usually come back within a day or two.
 
-For the review notes, say: "No account needed. Enter any date of birth, tap Choose people, pick a few, return home."
+The reviewer notes are in `LISTING.md` too.
 
 ## Getting it on his phone before review finishes
 

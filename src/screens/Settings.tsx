@@ -34,6 +34,7 @@ export function Settings({
       <View style={{ marginTop: 10 }}><Button title="Export to Calendar" secondary onPress={onExport} /></View>
 
       <View style={{ marginTop: 40 }}><Button title="Back" onPress={onBack} /></View>
+      <Muted style={{ marginTop: 24, fontSize: 14, lineHeight: 20, textAlign: "center" }}>Lifespan data from Wikidata and the Pantheon project at MIT (CC BY 4.0).</Muted>
     </Screen>
   );
 }
