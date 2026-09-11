@@ -82,5 +82,5 @@ const styles = StyleSheet.create({
   rowPassed: { backgroundColor: C.goodSoft, borderColor: C.goodSoft },
   name: { fontSize: 20, fontWeight: "700", color: C.text },
   when: { fontSize: 17, color: C.accent, marginTop: 6, fontWeight: "600" },
-  footer: { position: "absolute", left: 20, right: 20, bottom: 36 },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36, backgroundColor: C.bg },
 });

@@ -40,7 +40,7 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
     <Screen style={{ paddingHorizontal: 0 }}>
       <View style={{ paddingHorizontal: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <H1>Choose people</H1>
-        <Pressable onPress={onDone} hitSlop={12}><Text style={styles.done}>Done ({picks.size})</Text></Pressable>
+        {picks.size > 0 && <Pressable onPress={clearAll} hitSlop={12}><Text style={styles.clear}>Clear all</Text></Pressable>}
       </View>
       <TextInput
         value={query}
@@ -54,7 +54,6 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: "center" }} style={{ flexGrow: 0, height: 56, marginBottom: 6 }}>
         <Chip label="🎲 Surprise me" active={false} onPress={surprise} />
         <Chip label={`✅ Picked`} active={theme === "picked"} onPress={() => setTheme(theme === "picked" ? null : "picked")} />
-        {picks.size > 0 && <Chip label="🗑️ Clear all" active={false} onPress={clearAll} />}
         {THEMES.map((t) => (
           <Chip key={t.key} label={`${t.emoji} ${t.label}`} active={theme === t.key} onPress={() => setTheme(theme === t.key ? null : t.key)} />
         ))}
@@ -97,7 +96,7 @@ function PersonRow({ p, picked, onPress }: { p: Person; picked: boolean; onPress
 }
 
 const styles = StyleSheet.create({
-  done: { fontSize: 19, fontWeight: "700", color: C.accent },
+  clear: { fontSize: 19, fontWeight: "600", color: C.muted },
   search: { marginHorizontal: 20, marginVertical: 14, backgroundColor: C.card, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 19, borderWidth: 1, borderColor: C.line, color: C.text },
   chip: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999, backgroundColor: C.card, borderWidth: 1, borderColor: C.line },
   chipActive: { backgroundColor: C.accent, borderColor: C.accent },
@@ -105,5 +104,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", backgroundColor: C.card, borderRadius: 14, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.line },
   rowPicked: { borderColor: C.accent, backgroundColor: C.accentSoft },
   name: { fontSize: 19, fontWeight: "700", color: C.text },
-  footer: { position: "absolute", left: 20, right: 20, bottom: 36 },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 36, backgroundColor: C.bg },
 });
