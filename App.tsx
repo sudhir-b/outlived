@@ -8,7 +8,6 @@ import { Settings } from "./src/screens/Settings";
 import { DEFAULTS, loadSettings, saveSettings, Settings as S } from "./src/lib/storage";
 import { computeOutlive, Outlive, personById } from "./src/lib/people";
 import { ensurePermission, reschedule } from "./src/lib/notifications";
-import { shareIcs } from "./src/lib/ics";
 import { Civil, today } from "./src/lib/dates";
 
 type Screen = "loading" | "onboarding" | "home" | "pick" | "settings" | "editDob";
@@ -72,7 +71,6 @@ export default function App() {
           permission={permission}
           onChangeDob={() => setScreen("editDob")}
           onChangeTime={(h, m) => persist({ ...settings, notifyHour: h, notifyMinute: m })}
-          onExport={() => shareIcs(outlives).catch((e) => Alert.alert("Couldn't export", String(e)))}
           onRequestPermission={async () => {
             const ok = await ensurePermission();
             setPermission(ok);

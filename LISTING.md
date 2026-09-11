@@ -39,7 +39,6 @@ Cleopatra made it to 39. Mozart to 35. Darwin to 73. Churchill to 90. Somewhere 
 • Over four thousand people to choose from: musicians, scientists, rulers, writers, artists, athletes, explorers, and figures from the ancient world
 • Search by name, browse by theme, or tap Surprise me
 • A notification on the morning of each milestone
-• Export every milestone to your calendar
 
 No account. No sign-in. No internet needed. Your date of birth and your list never leave your phone.
 
@@ -55,7 +54,7 @@ First release.
 ```
 No account or sign-in. Enter any date of birth (for example 1 January 1960), tap Choose people, pick a few people or tap Surprise me, then tap Done. The home screen shows a countdown to the next milestone and a scoreboard.
 
-Notifications are scheduled locally on the device; there is no server and nothing is collected. The Export to Calendar button in Settings produces an .ics file via the share sheet.
+Notifications are scheduled locally on the device; there is no server and nothing is collected.
 ```
 
 **Screenshots**: 6.9-inch only is required (iPhone 17 Pro Max simulator, Cmd+S). Suggested set: Home with a countdown and scoreboard, Choose people with a theme selected, Settings. Three is plenty.

@@ -4,7 +4,6 @@ A tiny iOS app. Enter your date of birth, pick some famous people, and get a not
 
 - No account, no server. Everything is on the phone.
 - Local scheduled notifications (iOS caps these at 64 pending, so the nearest 64 milestones are scheduled).
-- "Export to Calendar" writes every milestone as an all-day event, as a backup for notifications.
 
 ## Develop
 

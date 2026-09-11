@@ -7,7 +7,6 @@ Gift app for one user. No sign-in, no backend, no running costs.
 - Reason: iOS web apps can't schedule local notifications (Web Push needs a server). Native is the only true client-only option with notifications.
 - Cost: Apple Developer Program $99/yr. Prototype free on iOS Simulator first.
 - Distribution: App Store submission (permanent). TestFlight expires every 90 days, so avoid it for the final gift. EAS ad hoc build (device UDID registered) is a 1-year middle option.
-- Fallback / hedge: "Add to Calendar" button exporting an .ics of all outlive dates. Works even if notification permission is denied.
 
 ## User flow
 1. First open: enter date of birth (big date picker, large text). Stored in AsyncStorage.
@@ -42,5 +41,5 @@ Gift app for one user. No sign-in, no backend, no running costs.
 1. Expo app skeleton, DOB screen, hardcoded 20 people, home list with calc. Run in Simulator.
 2. Local notifications + reschedule logic + permission handling. Test in Simulator with a fake "tomorrow".
 3. Wikidata script -> people.json, themes, search, surprise me.
-4. .ics export, settings, large-text pass, app icon.
+4. Settings, large-text pass, app icon.
 5. Apple account, EAS build, App Store submission.

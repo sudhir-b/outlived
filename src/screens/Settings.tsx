@@ -5,10 +5,10 @@ import { Button, C, H1, H2, Muted, P, Screen } from "../ui";
 import { Civil, formatCivil } from "../lib/dates";
 
 export function Settings({
-  dob, hour, minute, scheduled, permission, onChangeDob, onChangeTime, onExport, onRequestPermission, onBack,
+  dob, hour, minute, scheduled, permission, onChangeDob, onChangeTime, onRequestPermission, onBack,
 }: {
   dob: Civil; hour: number; minute: number; scheduled: number; permission: boolean;
-  onChangeDob: () => void; onChangeTime: (h: number, m: number) => void; onExport: () => void; onRequestPermission: () => void; onBack: () => void;
+  onChangeDob: () => void; onChangeTime: (h: number, m: number) => void; onRequestPermission: () => void; onBack: () => void;
 }) {
   const time = new Date(2000, 0, 1, hour, minute);
   return (
@@ -28,10 +28,6 @@ export function Settings({
         {permission ? `${scheduled} reminder${scheduled === 1 ? "" : "s"} scheduled (up to 64 at a time).` : "Notifications are off."}
       </Muted>
       {!permission && <View style={{ marginTop: 10 }}><Button title="Turn on notifications" secondary onPress={onRequestPermission} /></View>}
-
-      <H2 style={{ marginTop: 28 }}>Calendar</H2>
-      <Muted>Add every milestone to your calendar as an all-day event.</Muted>
-      <View style={{ marginTop: 10 }}><Button title="Export to Calendar" secondary onPress={onExport} /></View>
 
       <View style={{ marginTop: 40 }}><Button title="Back" onPress={onBack} /></View>
       <Muted style={{ marginTop: 24, fontSize: 14, lineHeight: 20, textAlign: "center" }}>Lifespan data from Wikidata and the Pantheon project at MIT (CC BY 4.0).</Muted>
