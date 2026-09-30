@@ -30,6 +30,12 @@
       "expo-font"
     ],
     "scheme": "outlasted",
-    "backgroundColor": "#14110F"
+    "backgroundColor": "#14110F",
+    "extra": {
+      "eas": {
+        "projectId": "352bbf38-fdac-4c38-ae40-45d731d49232"
+      }
+    },
+    "owner": "sudb"
   }
 }
