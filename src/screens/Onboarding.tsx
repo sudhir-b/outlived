@@ -4,12 +4,12 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Button, H1, Muted, P, Screen, C } from "../ui";
 import { Civil, fromDate, toDate } from "../lib/dates";
 
-export function Onboarding({ initial, onDone, onCancel }: { initial: Civil | null; onDone: (dob: Civil) => void; onCancel?: () => void }) {
+export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | null; withHeader?: boolean; onDone: (dob: Civil) => void }) {
   const [date, setDate] = useState<Date>(initial ? toDate(initial) : new Date(1960, 0, 1));
   return (
-    <Screen>
-      <H1>When were you born?</H1>
-      <Muted style={{ marginTop: 8 }}>Everything else is worked out from this. It stays on your phone.</Muted>
+    <Screen style={withHeader ? { paddingTop: 24 } : undefined}>
+      {!withHeader && <H1>When were you born?</H1>}
+      <Muted style={{ marginTop: withHeader ? 0 : 8 }}>Everything else is worked out from this. It stays on your phone.</Muted>
       <View style={{ marginVertical: 32, backgroundColor: C.card, borderRadius: 16, height: 216, overflow: "hidden", justifyContent: "center" }}>
         <DateTimePicker
           value={date}
@@ -22,8 +22,7 @@ export function Onboarding({ initial, onDone, onCancel }: { initial: Civil | nul
           style={{ height: 216 }}
         />
       </View>
-      <Button title="Continue" onPress={() => onDone(fromDate(date))} />
-      {onCancel && <View style={{ marginTop: 12 }}><Button title="Cancel" secondary onPress={onCancel} /></View>}
+      <Button title={withHeader ? "Save" : "Continue"} onPress={() => onDone(fromDate(date))} />
       <P style={{ marginTop: 24, textAlign: "center" }}>{date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}</P>
     </Screen>
   );

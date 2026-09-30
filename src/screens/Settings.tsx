@@ -1,21 +1,19 @@
-import React, { useState } from "react";
-import { Alert, Platform, View } from "react-native";
+import React from "react";
+import { Platform, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Button, C, H1, H2, Muted, P, Screen } from "../ui";
+import { Button, C, H2, Muted, P, Screen } from "../ui";
 import { Civil, formatCivil } from "../lib/dates";
 
 export function Settings({
-  dob, hour, minute, scheduled, permission, onChangeDob, onChangeTime, onRequestPermission, onBack,
+  dob, hour, minute, scheduled, permission, onChangeDob, onChangeTime, onRequestPermission,
 }: {
   dob: Civil; hour: number; minute: number; scheduled: number; permission: boolean;
-  onChangeDob: () => void; onChangeTime: (h: number, m: number) => void; onRequestPermission: () => void; onBack: () => void;
+  onChangeDob: () => void; onChangeTime: (h: number, m: number) => void; onRequestPermission: () => void;
 }) {
   const time = new Date(2000, 0, 1, hour, minute);
   return (
-    <Screen>
-      <H1>Settings</H1>
-
-      <H2 style={{ marginTop: 28 }}>Date of birth</H2>
+    <Screen style={{ paddingTop: 24 }}>
+      <H2>Date of birth</H2>
       <P>{formatCivil(dob)}</P>
       <View style={{ marginTop: 10 }}><Button title="Change" secondary onPress={onChangeDob} /></View>
 
@@ -29,8 +27,7 @@ export function Settings({
       </Muted>
       {!permission && <View style={{ marginTop: 10 }}><Button title="Turn on notifications" secondary onPress={onRequestPermission} /></View>}
 
-      <View style={{ marginTop: 40 }}><Button title="Back" onPress={onBack} /></View>
-      <Muted style={{ marginTop: 24, fontSize: 14, lineHeight: 20, textAlign: "center" }}>Lifespan data from Wikidata and the Pantheon project at MIT (CC BY 4.0).</Muted>
+      <Muted style={{ marginTop: 40, fontSize: 14, lineHeight: 20, textAlign: "center" }}>Lifespan data from Wikidata and the Pantheon project at MIT (CC BY 4.0).</Muted>
     </Screen>
   );
 }

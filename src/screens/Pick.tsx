@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Button, C, H1, Icon, Muted, Screen, footer } from "../ui";
+import { Button, C, Icon, Muted, Screen, footer } from "../ui";
 import { PEOPLE, Person, THEMES, randomPeople } from "../lib/people";
 import { formatYear } from "../lib/dates";
 
-export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange: (next: Set<string>) => void; onDone: () => void }) {
+type Nav = { setOptions: (o: object) => void };
+
+export function Pick({ picks, onChange, onDone, navigation }: { picks: Set<string>; onChange: (next: Set<string>) => void; onDone: () => void; navigation: Nav }) {
   const [query, setQuery] = useState("");
   const [theme, setTheme] = useState<string | null>(null);
 
@@ -28,6 +30,13 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
       { text: "Remove all", style: "destructive", onPress: () => { onChange(new Set()); setTheme(null); } },
     ]);
   };
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => picks.size > 0 ? <Pressable onPress={clearAll} hitSlop={12} style={styles.barButton}><Text style={styles.clear}>Clear all</Text></Pressable> : null,
+      headerRight: () => <Pressable onPress={onDone} hitSlop={12} style={styles.barButton}><Text style={styles.done}>Done</Text></Pressable>,
+    });
+  }, [navigation, picks.size]);
+
   const surprise = () => {
     const next = new Set(picks);
     for (const p of randomPeople(10, picks)) next.add(p.id);
@@ -37,11 +46,7 @@ export function Pick({ picks, onChange, onDone }: { picks: Set<string>; onChange
   };
 
   return (
-    <Screen style={{ paddingHorizontal: 0 }}>
-      <View style={styles.header}>
-        <H1>Choose people</H1>
-        {picks.size > 0 && <Pressable onPress={clearAll} hitSlop={12}><Text style={styles.clear}>Clear all</Text></Pressable>}
-      </View>
+    <Screen style={{ paddingHorizontal: 0, paddingTop: 0 }}>
       <View style={styles.search}>
         <Icon name="search" size={22} color={C.muted} />
         <TextInput
@@ -102,8 +107,10 @@ function PersonRow({ p, picked, onPress }: { p: Person; picked: boolean; onPress
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: 24, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  clear: { fontSize: 16, fontWeight: "700", color: C.muted },
+  // iOS 26 wraps header buttons in a glass capsule sized to the view, so the padding is what keeps the text off its edge.
+  barButton: { paddingHorizontal: 10 },
+  clear:{ fontSize: 17, fontWeight: "600", color: C.muted },
+  done: { fontSize: 17, fontWeight: "700", color: C.accent },
   search: { marginHorizontal: 24, marginTop: 18, marginBottom: 6, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.card, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 4 },
   searchInput: { flex: 1, fontSize: 19, color: C.text, paddingVertical: 12 },
   chip: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1.5, borderColor: "#3A332C" },
