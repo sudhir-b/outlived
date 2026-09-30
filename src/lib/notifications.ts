@@ -21,8 +21,19 @@ export async function ensurePermission(): Promise<boolean> {
   return req.granted;
 }
 
-/** Cancel everything and schedule the next N future milestones. */
-export async function reschedule(outlives: Outlive[], hour: number, minute: number): Promise<number> {
+let queue: Promise<number> = Promise.resolve(0);
+
+/**
+ * Cancel everything and schedule the next N future milestones.
+ * Runs one at a time: ticking people quickly would otherwise interleave two runs and leave duplicate reminders.
+ */
+export function reschedule(outlives: Outlive[], hour: number, minute: number): Promise<number> {
+  const run = queue.catch(() => 0).then(() => replan(outlives, hour, minute));
+  queue = run;
+  return run;
+}
+
+async function replan(outlives: Outlive[], hour: number, minute: number): Promise<number> {
   await Notifications.cancelAllScheduledNotificationsAsync();
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("milestones", {
