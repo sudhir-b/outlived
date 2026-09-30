@@ -165,8 +165,7 @@ const people = [...byId.values()]
     if (themes.has("words") && themes.size > 1 && !occ.some((o) => STRONG_WORDS.some((w) => o.includes(w)))) themes.delete("words");
     if (e.death.y < 500) themes.add("ancient");
     const ageYears = e.death.y - e.birth.y - ((e.death.m < e.birth.m || (e.death.m === e.birth.m && e.death.d < e.birth.d)) ? 1 : 0);
-    if (ageYears < 40) themes.add("young");
-    if (ageYears >= 90) themes.add("long");
+    if (ageYears >= 60 && ageYears < 70) themes.add("sixties");
     // rank: Pantheon popularity index where we have it, otherwise a rough equivalent from sitelinks.
     const rank = e.pantheon ? Number(e.pantheon.hpi) : 50 + e.sitelinks / 8;
     if (e.disputed) return null;
