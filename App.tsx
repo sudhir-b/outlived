@@ -51,18 +51,17 @@ function HomeScreen({ navigation }: NativeStackScreenProps<RootParams, "Home">) 
 
 function PickScreen({ navigation }: NativeStackScreenProps<RootParams, "Pick">) {
   const { settings, setPicks } = useApp();
-  return <Pick picks={new Set(settings.picks)} onChange={setPicks} onDone={() => navigation.goBack()} navigation={navigation} />;
+  return <Pick dob={settings.dob} picks={new Set(settings.picks)} onChange={setPicks} onDone={() => navigation.goBack()} navigation={navigation} />;
 }
 
 function SettingsScreen({ navigation }: NativeStackScreenProps<RootParams, "Settings">) {
-  const { settings, scheduled, permission, setTime, requestPermission } = useApp();
+  const { settings, permission, setTime, requestPermission } = useApp();
   if (!settings.dob) return null;
   return (
     <Settings
       dob={settings.dob}
       hour={settings.notifyHour}
       minute={settings.notifyMinute}
-      scheduled={scheduled}
       permission={permission}
       onChangeDob={() => navigation.navigate("EditDob")}
       onChangeTime={setTime}

@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { Outlive } from "./people";
-import { formatAge, toDate } from "./dates";
+import { ageInWords, toDate } from "./dates";
 
 const IOS_LIMIT = 64;
 
@@ -64,7 +64,7 @@ async function schedule(o: Outlive, hour: number, minute: number): Promise<void>
   await Notifications.scheduleNotificationAsync({
       content: {
         title: `You've outlasted ${o.person.name}`,
-        body: `${o.person.name} died aged ${formatAge(o.lifespan)}. As of today, you've lived longer.`,
+        body: `${o.person.name} died aged ${ageInWords(o.lifespan, o.person.precision)}. As of today, you've lived longer.`,
         sound: true,
       },
       trigger: {

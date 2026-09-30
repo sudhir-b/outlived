@@ -1,23 +1,36 @@
 import React, { useLayoutEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, C, Icon, Muted, Screen, footer } from "../ui";
-import { PEOPLE, Person, THEMES, randomPeople } from "../lib/people";
-import { formatYear } from "../lib/dates";
+import { PEOPLE, Person, THEMES, randomPeople, stillAhead } from "../lib/people";
+import { Civil, formatYear } from "../lib/dates";
 
 type Nav = { setOptions: (o: object) => void };
 
-export function Pick({ picks, onChange, onDone, navigation }: { picks: Set<string>; onChange: (next: Set<string>) => void; onDone: () => void; navigation: Nav }) {
+const matches = (p: Person, q: string) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q);
+const listNames = (names: string[]) =>
+  names.length === 1 ? names[0] : names.length === 2 ? `${names[0]} and ${names[1]}` : `${names[0]}, ${names[1]} and ${names.length - 2} more`;
+
+export function Pick({ dob, picks, onChange, onDone, navigation }: { dob: Civil | null; picks: Set<string>; onChange: (next: Set<string>) => void; onDone: () => void; navigation: Nav }) {
   const [query, setQuery] = useState("");
   const [theme, setTheme] = useState<string | null>(null);
+  // Only offer people who lived longer than you have so far. "Picked" still shows everyone, so outlasted picks can be removed.
+  const ahead = useMemo(() => (dob ? stillAhead(dob) : PEOPLE), [dob]);
+  const themes = useMemo(() => THEMES.filter((t) => ahead.some((p) => p.themes.includes(t.key))), [ahead]);
 
+  const q = query.trim().toLowerCase();
   const list = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let out = PEOPLE;
-    if (theme === "picked") out = out.filter((p) => picks.has(p.id));
-    else if (theme) out = out.filter((p) => p.themes.includes(theme));
-    if (q) out = out.filter((p) => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+    let out = theme === "picked" ? PEOPLE.filter((p) => picks.has(p.id)) : ahead;
+    if (theme && theme !== "picked") out = out.filter((p) => p.themes.includes(theme));
+    if (q) out = out.filter((p) => matches(p, q));
     return out.slice(0, 200);
-  }, [query, theme, picks]);
+  }, [q, theme, picks, ahead]);
+  // Searching for someone you've already outlasted says so, instead of looking like they're missing.
+  const aheadIds = useMemo(() => new Set(ahead.map((p) => p.id)), [ahead]);
+  const outlasted = useMemo(
+    () => (!q || theme === "picked" ? [] : PEOPLE.filter((p) => !aheadIds.has(p.id) && (!theme || p.themes.includes(theme)) && matches(p, q)).map((p) => p.name)),
+    [q, theme, aheadIds],
+  );
+  const note = outlasted.length ? `You've already outlasted ${listNames(outlasted)}.` : null;
 
   const toggle = (id: string) => {
     const next = new Set(picks);
@@ -39,7 +52,7 @@ export function Pick({ picks, onChange, onDone, navigation }: { picks: Set<strin
 
   const surprise = () => {
     const next = new Set(picks);
-    for (const p of randomPeople(10, picks)) next.add(p.id);
+    for (const p of randomPeople(10, ahead, picks)) next.add(p.id);
     onChange(next);
     setTheme("picked");
     setQuery("");
@@ -63,7 +76,7 @@ export function Pick({ picks, onChange, onDone, navigation }: { picks: Set<strin
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 8, alignItems: "center" }} style={{ flexGrow: 0, height: 60 }}>
         <Chip label="Surprise me" icon="shuffle" accent onPress={surprise} />
         <Chip label="Picked" active={theme === "picked"} onPress={() => setTheme(theme === "picked" ? null : "picked")} />
-        {THEMES.map((t) => (
+        {themes.map((t) => (
           <Chip key={t.key} label={t.label} active={theme === t.key} onPress={() => setTheme(theme === t.key ? null : t.key)} />
         ))}
       </ScrollView>
@@ -73,7 +86,8 @@ export function Pick({ picks, onChange, onDone, navigation }: { picks: Set<strin
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 130 }}
         renderItem={({ item }) => <PersonRow p={item} picked={picks.has(item.id)} onPress={() => toggle(item.id)} />}
-        ListEmptyComponent={<Muted style={{ textAlign: "center", marginTop: 40 }}>Nobody matches that.</Muted>}
+        ListEmptyComponent={<Muted style={{ textAlign: "center", marginTop: 40 }}>{note ?? "Nobody matches that."}</Muted>}
+        ListFooterComponent={list.length > 0 && note ? <Muted style={{ textAlign: "center", marginTop: 12 }}>{note}</Muted> : null}
       />
       <View style={footer}>
         <Button title={picks.size ? `Done · ${picks.size} picked` : "Done"} onPress={onDone} />

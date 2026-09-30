@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Button, H1, Muted, P, Screen, C } from "../ui";
+import { Button, H1, P, Screen, C } from "../ui";
 import { Civil, fromDate, toDate } from "../lib/dates";
 
 export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | null; withHeader?: boolean; onDone: (dob: Civil) => void }) {
@@ -9,8 +9,7 @@ export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | n
   return (
     <Screen style={withHeader ? { paddingTop: 24 } : undefined}>
       {!withHeader && <H1>When were you born?</H1>}
-      <Muted style={{ marginTop: withHeader ? 0 : 8 }}>Everything else is worked out from this. It stays on your phone.</Muted>
-      <View style={{ marginVertical: 32, backgroundColor: C.card, borderRadius: 16, height: 216, overflow: "hidden", justifyContent: "center" }}>
+      <View style={{ marginTop: withHeader ? 0 : 32, marginBottom: 32, backgroundColor: C.card, borderRadius: 16, height: 216, overflow: "hidden", justifyContent: "center" }}>
         <DateTimePicker
           value={date}
           mode="date"

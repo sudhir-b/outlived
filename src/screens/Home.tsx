@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Button, C, Icon, Label, Muted, P, Screen, footer } from "../ui";
-import { Civil, daysBetween, formatAge, formatCivil, today, yearsMonths } from "../lib/dates";
+import { Civil, daysBetween, formatCivil, formatLifespan, today } from "../lib/dates";
 import { Outlive } from "../lib/people";
 
 function Hero({ next, total, passed }: { next: Outlive | undefined; total: number; passed: number }) {
@@ -33,39 +33,36 @@ function Hero({ next, total, passed }: { next: Outlive | undefined; total: numbe
       <Text style={[styles.big, { fontSize: size, lineHeight: size }]}>{text}</Text>
       <P style={{ color: C.muted, marginTop: 6 }}>{d === 0 ? "you outlast" : d === 1 ? "day until you outlast" : "days until you outlast"}</P>
       <Text style={styles.name}>{next.person.name}</Text>
-      <Muted style={{ marginTop: 6 }}>
-        Died at {formatAge(next.lifespan)}{next.person.precision !== "day" ? " (approx.)" : ""} · you pass them on {formatCivil(next.date)}
-      </Muted>
+      <Muted style={{ marginTop: 6 }}>Died at {formatLifespan(next.lifespan, next.person.precision)} · {formatCivil(next.date)}</Muted>
     </View>
   );
 }
 
-function Bar({ o, next, maxDays }: { o: Outlive; next: boolean; maxDays: number }) {
+function Bar({ o, next, maxDays, youPct }: { o: Outlive; next: boolean; maxDays: number; youPct: number }) {
   const passed = o.daysAway <= 0 && !next;
   const color = next ? C.accent : passed ? C.good : C.future;
-  const right = next ? (o.daysAway === 0 ? "Today" : `${o.daysAway.toLocaleString()} day${o.daysAway === 1 ? "" : "s"}`) : formatAge(o.lifespan);
+  const right = next ? (o.daysAway === 0 ? "Today" : `${o.daysAway.toLocaleString()} day${o.daysAway === 1 ? "" : "s"}`) : formatLifespan(o.lifespan, o.person.precision);
   return (
     <View style={{ marginBottom: 14 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
         <Text style={styles.rowName} numberOfLines={1}>{o.person.name}</Text>
         <Text style={[styles.rowRight, { color: next ? C.accent : passed ? C.good : C.muted }]}>{right}</Text>
       </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${Math.min(100, (o.lifespan / maxDays) * 100)}%`, backgroundColor: color }]} />
+      <View>
+        <View style={styles.track}>
+          <View style={[styles.fill, { width: `${Math.min(100, (o.lifespan / maxDays) * 100)}%`, backgroundColor: color }]} />
+        </View>
+        {/* Your age marked on each bar. A line down the whole list ran through the names and ages. */}
+        <View pointerEvents="none" style={[styles.tick, { left: `${youPct}%` }]} />
       </View>
     </View>
   );
 }
 
-function YouLine({ pct, rows }: { pct: number; rows: number }) {
-  // A dashed vertical line drawn from short segments, since single-edge dashed borders are unreliable on iOS.
-  const dashes = Array.from({ length: rows * 8 });
+function YouPill({ pct }: { pct: number }) {
   return (
-    <View pointerEvents="none" style={[styles.youLine, { left: `${pct}%` }]}>
+    <View pointerEvents="none" style={[styles.youPillWrap, { left: `${pct}%` }]}>
       <View style={styles.youPill}><Text style={styles.youText}>YOU</Text></View>
-      <View style={{ flex: 1, overflow: "hidden", alignItems: "center" }}>
-        {dashes.map((_, i) => <View key={i} style={styles.dash} />)}
-      </View>
     </View>
   );
 }
@@ -75,8 +72,8 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
   const next = sorted.find((o) => o.daysAway >= 0);
   const passed = sorted.filter((o) => o.daysAway < 0).length;
   const ageDays = daysBetween(dob, today());
-  const age = yearsMonths(dob, today());
   const maxDays = Math.max(ageDays, ...sorted.map((o) => o.lifespan)) * 1.06;
+  const youPct = (ageDays / maxDays) * 100;
 
   return (
     <Screen style={{ paddingHorizontal: 0 }}>
@@ -92,10 +89,9 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
               <Label>SCOREBOARD</Label>
               <Text style={styles.score}><Text style={{ color: C.good }}>{passed}</Text><Text style={{ color: C.muted }}> of {sorted.length}</Text></Text>
             </View>
-            <Muted style={{ marginBottom: 26 }}>You're {age.years}y {age.months}m. Bars are how long each person lived.</Muted>
             <View style={{ position: "relative", paddingTop: 22 }}>
-              <YouLine pct={(ageDays / maxDays) * 100} rows={sorted.length} />
-              {sorted.map((o) => <Bar key={o.person.id} o={o} next={o === next} maxDays={maxDays} />)}
+              <YouPill pct={youPct} />
+              {sorted.map((o) => <Bar key={o.person.id} o={o} next={o === next} maxDays={maxDays} youPct={youPct} />)}
             </View>
           </View>
         )}
@@ -113,14 +109,15 @@ const styles = StyleSheet.create({
   hero: {},
   big: { fontSize: 128, lineHeight: 128, fontWeight: "800", color: C.text, letterSpacing: -5, marginTop: 6, fontVariant: ["tabular-nums"] },
   name: { fontSize: 34, lineHeight: 38, fontWeight: "800", color: C.text, letterSpacing: -0.5, marginTop: 2 },
-  sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 },
+  sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 },
   score: { fontSize: 22, fontWeight: "800", fontVariant: ["tabular-nums"] },
   rowName: { fontSize: 17, fontWeight: "700", color: C.text, flexShrink: 1, marginRight: 12 },
   rowRight: { fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
   track: { height: 12, borderRadius: 6, backgroundColor: C.track, overflow: "hidden" },
   fill: { height: 12, borderRadius: 6 },
-  youLine: { position: "absolute", top: 0, bottom: 0, width: 60, marginLeft: -30, alignItems: "center", zIndex: 1 },
-  youPill: { backgroundColor: C.accent, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, marginBottom: 4 },
+  youPillWrap: { position: "absolute", top: 0, width: 60, marginLeft: -30, alignItems: "center" },
+  youPill: { backgroundColor: C.accent, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
   youText: { fontSize: 11, fontWeight: "800", color: C.bg, letterSpacing: 1 },
-  dash: { width: 2, height: 6, backgroundColor: C.accent, marginBottom: 5, borderRadius: 1 },
+  // The dark outline keeps the tick visible where it crosses the amber bar of the next person.
+  tick: { position: "absolute", top: -5, bottom: -5, width: 5, marginLeft: -2.5, borderRadius: 2.5, backgroundColor: C.accent, borderWidth: 1.5, borderColor: C.bg },
 });

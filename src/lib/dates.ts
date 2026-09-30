@@ -80,3 +80,11 @@ export function formatAge(days: number): string {
   const months = Math.floor((days - years * 365.2425) / 30.436875);
   return months > 0 ? `${years}y ${months}m` : `${years}y`;
 }
+/** How long someone lived. Year-only dates can't support months (they'd show 60 years as "59y 11m"), so those read "~60y". */
+export function formatLifespan(days: number, precision: Precision): string {
+  return precision === "year" ? `~${Math.round(days / 365.2425)}y` : formatAge(days);
+}
+/** Age at death for a sentence: "67", or "about 60" when the dates are only known to the year. */
+export function ageInWords(days: number, precision: Precision): string {
+  return precision === "year" ? `about ${Math.round(days / 365.2425)}` : String(Math.floor(days / 365.2425));
+}

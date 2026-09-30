@@ -8,7 +8,6 @@ import { Civil, today } from "./lib/dates";
 type Store = {
   settings: Settings;
   outlives: Outlive[];
-  scheduled: number;
   permission: boolean;
   setDob: (dob: Civil) => void;
   setPicks: (picks: Set<string>) => void;
@@ -27,7 +26,6 @@ export function useApp(): Store {
 export function AppProvider({ initial, children }: { initial: Settings; children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(initial);
   const [permission, setPermission] = useState(false);
-  const [scheduled, setScheduled] = useState(0);
   const [ref, setRef] = useState<Civil>(today());
 
   // Recompute "today" when the app comes back to the foreground, so a milestone that passed overnight shows as passed.
@@ -57,7 +55,7 @@ export function AppProvider({ initial, children }: { initial: Settings; children
       const ok = await ensurePermission();
       if (cancelled) return;
       setPermission(ok);
-      if (ok) setScheduled(await reschedule(outlives, settings.notifyHour, settings.notifyMinute));
+      if (ok) await reschedule(outlives, settings.notifyHour, settings.notifyMinute);
     })();
     return () => { cancelled = true; };
   }, [outlives, settings.notifyHour, settings.notifyMinute]);
@@ -65,13 +63,12 @@ export function AppProvider({ initial, children }: { initial: Settings; children
   const store = useMemo<Store>(() => ({
     settings,
     outlives,
-    scheduled,
     permission,
     setDob: (dob) => persist({ ...settings, dob }),
     setPicks: (picks) => persist({ ...settings, picks: [...picks] }),
     setTime: (notifyHour, notifyMinute) => persist({ ...settings, notifyHour, notifyMinute }),
     requestPermission: async () => { const ok = await ensurePermission(); setPermission(ok); return ok; },
-  }), [settings, outlives, scheduled, permission, persist]);
+  }), [settings, outlives, permission, persist]);
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
 }

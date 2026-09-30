@@ -1,33 +1,53 @@
 import React from "react";
-import { Platform, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Button, C, H2, Muted, P, Screen } from "../ui";
+import { Button, C, Icon, Muted, Screen } from "../ui";
 import { Civil, formatCivil } from "../lib/dates";
 
 export function Settings({
-  dob, hour, minute, scheduled, permission, onChangeDob, onChangeTime, onRequestPermission,
+  dob, hour, minute, permission, onChangeDob, onChangeTime, onRequestPermission,
 }: {
-  dob: Civil; hour: number; minute: number; scheduled: number; permission: boolean;
+  dob: Civil; hour: number; minute: number; permission: boolean;
   onChangeDob: () => void; onChangeTime: (h: number, m: number) => void; onRequestPermission: () => void;
 }) {
   const time = new Date(2000, 0, 1, hour, minute);
   return (
     <Screen style={{ paddingTop: 24 }}>
-      <H2>Date of birth</H2>
-      <P>{formatCivil(dob)}</P>
-      <View style={{ marginTop: 10 }}><Button title="Change" secondary onPress={onChangeDob} /></View>
-
-      <H2 style={{ marginTop: 28 }}>Reminder time</H2>
-      <Muted>On the day you outlive someone, you'll get a notification at this time.</Muted>
-      <View style={{ backgroundColor: C.card, borderRadius: 14, marginTop: 10, alignItems: Platform.OS === "ios" ? "flex-start" : "stretch" }}>
-        <DateTimePicker value={time} mode="time" themeVariant="dark" display={Platform.OS === "ios" ? "compact" : "default"} onValueChange={(_, d) => onChangeTime(d.getHours(), d.getMinutes())} />
+      <View style={styles.group}>
+        <Pressable onPress={onChangeDob} style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+          <Text style={styles.label}>Date of birth</Text>
+          <View style={styles.value}>
+            <Text style={styles.valueText}>{formatCivil(dob)}</Text>
+            <Icon name="chevron-forward" size={20} color={C.muted} />
+          </View>
+        </Pressable>
+        <View style={styles.divider} />
+        <View style={styles.row}>
+          <Text style={styles.label}>Reminder time</Text>
+          <DateTimePicker
+            value={time}
+            mode="time"
+            themeVariant="dark"
+            accentColor={C.accent}
+            display={Platform.OS === "ios" ? "compact" : "default"}
+            onValueChange={(_, d) => onChangeTime(d.getHours(), d.getMinutes())}
+          />
+        </View>
       </View>
-      <Muted style={{ marginTop: 10 }}>
-        {permission ? `${scheduled} reminder${scheduled === 1 ? "" : "s"} scheduled (up to 64 at a time).` : "Notifications are off."}
+      <Muted style={styles.footnote}>
+        {permission ? "On the day you outlast someone, you'll get a notification at this time." : "Notifications are off, so reminders can't reach you."}
       </Muted>
-      {!permission && <View style={{ marginTop: 10 }}><Button title="Turn on notifications" secondary onPress={onRequestPermission} /></View>}
-
-      <Muted style={{ marginTop: 40, fontSize: 14, lineHeight: 20, textAlign: "center" }}>Lifespan data from Wikidata and the Pantheon project at MIT (CC BY 4.0).</Muted>
+      {!permission && <View style={{ marginTop: 14 }}><Button title="Turn on notifications" secondary onPress={onRequestPermission} /></View>}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  group: { backgroundColor: C.card, borderRadius: 16, paddingHorizontal: 18 },
+  row: { minHeight: 60, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: C.muted, opacity: 0.35 },
+  label: { fontSize: 19, color: C.text },
+  value: { flexDirection: "row", alignItems: "center", gap: 6 },
+  valueText: { fontSize: 19, color: C.muted },
+  footnote: { marginTop: 10, marginHorizontal: 4, fontSize: 15, lineHeight: 21 },
+});
