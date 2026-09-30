@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Button, C, Icon, Muted, Screen, footer } from "../ui";
+import { Button, C, Footer, Icon, Muted, Screen, useFooterSpace } from "../ui";
 import { PEOPLE, Person, THEMES, randomPeople, stillAhead } from "../lib/people";
 import { Civil, formatYear } from "../lib/dates";
 
@@ -13,6 +13,7 @@ const listNames = (names: string[]) =>
 export function Pick({ dob, picks, onChange, onDone, navigation }: { dob: Civil | null; picks: Set<string>; onChange: (next: Set<string>) => void; onDone: () => void; navigation: Nav }) {
   const [query, setQuery] = useState("");
   const [theme, setTheme] = useState<string | null>(null);
+  const footerSpace = useFooterSpace();
   // Only offer people who lived longer than you have so far. "Picked" still shows everyone, so outlasted picks can be removed.
   const ahead = useMemo(() => (dob ? stillAhead(dob) : PEOPLE), [dob]);
   const themes = useMemo(() => THEMES.filter((t) => ahead.some((p) => p.themes.includes(t.key))), [ahead]);
@@ -84,14 +85,14 @@ export function Pick({ dob, picks, onChange, onDone, navigation }: { dob: Civil 
         data={list}
         keyExtractor={(p) => p.id}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 130 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: footerSpace }}
         renderItem={({ item }) => <PersonRow p={item} picked={picks.has(item.id)} onPress={() => toggle(item.id)} />}
         ListEmptyComponent={<Muted style={{ textAlign: "center", marginTop: 40 }}>{note ?? "Nobody matches that."}</Muted>}
         ListFooterComponent={list.length > 0 && note ? <Muted style={{ textAlign: "center", marginTop: 12 }}>{note}</Muted> : null}
       />
-      <View style={footer}>
+      <Footer>
         <Button title={picks.size ? `Done · ${picks.size} picked` : "Done"} onPress={onDone} />
-      </View>
+      </Footer>
     </Screen>
   );
 }

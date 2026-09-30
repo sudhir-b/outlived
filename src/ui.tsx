@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, TextProps, View, ViewProps } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, TextProps, View, ViewProps } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 // Dark, warm palette: ink background, amber for the next milestone, green for the ones already passed.
@@ -55,9 +56,26 @@ export function Initials({ name, size = 44 }: { name: string; size?: number }) {
   );
 }
 
-export const footer = { position: "absolute" as const, left: 0, right: 0, bottom: 0, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 36, backgroundColor: C.bg };
+// Android draws the app behind its navigation bar (edge to edge), so the pinned button clears that bar there.
+// iPhone keeps the fixed gap it was designed with.
+function useBottomInset(): number {
+  const insets = useSafeAreaInsets();
+  return Platform.OS === "ios" ? 0 : insets.bottom;
+}
+
+/** The main button, pinned to the bottom of the screen. */
+export function Footer({ children }: { children: React.ReactNode }) {
+  const inset = useBottomInset();
+  return <View style={[styles.footer, { paddingBottom: Platform.OS === "ios" ? 36 : inset + 16 }]}>{children}</View>;
+}
+
+/** Bottom padding for scrolling content under a Footer, so its last row isn't hidden behind the button. */
+export function useFooterSpace(): number {
+  return 130 + useBottomInset();
+}
 
 const styles = StyleSheet.create({
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: 24, paddingTop: 12, backgroundColor: C.bg },
   screen: { flex: 1, backgroundColor: C.bg, paddingHorizontal: 24, paddingTop: 64 },
   h1: { fontSize: 34, fontWeight: "800", color: C.text, letterSpacing: -0.5, lineHeight: 38 },
   h2: { fontSize: 22, fontWeight: "700", color: C.text },

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Linking } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DarkTheme, NavigationContainer, useFocusEffect } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Onboarding } from "./src/screens/Onboarding";
@@ -96,26 +97,28 @@ export default function App() {
   if (!initial) return null;
 
   return (
-    <AppProvider initial={initial}>
-      <StatusBar style="light" />
-      <NavigationContainer theme={theme}>
-        <Stack.Navigator
-          initialRouteName={initial.dob ? "Home" : "Onboarding"}
-          screenOptions={{
-            headerStyle: { backgroundColor: C.bg },
-            headerTintColor: C.accent,
-            headerTitleStyle: { color: C.text, fontWeight: "700" },
-            headerShadowVisible: false,
-            contentStyle: { backgroundColor: C.bg },
-          }}
-        >
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false, title: "Outlasted" }} />
-          <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: "Settings" }} />
-          <Stack.Screen name="EditDob" component={EditDobScreen} options={{ title: "Date of birth" }} />
-          <Stack.Screen name="Pick" component={PickScreen} options={{ title: "Choose people", presentation: "modal" }} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider initial={initial}>
+        <StatusBar style="light" />
+        <NavigationContainer theme={theme}>
+          <Stack.Navigator
+            initialRouteName={initial.dob ? "Home" : "Onboarding"}
+            screenOptions={{
+              headerStyle: { backgroundColor: C.bg },
+              headerTintColor: C.accent,
+              headerTitleStyle: { color: C.text, fontWeight: "700" },
+              headerShadowVisible: false,
+              contentStyle: { backgroundColor: C.bg },
+            }}
+          >
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false, title: "Outlasted" }} />
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: "Settings" }} />
+            <Stack.Screen name="EditDob" component={EditDobScreen} options={{ title: "Date of birth" }} />
+            <Stack.Screen name="Pick" component={PickScreen} options={{ title: "Choose people", presentation: "modal" }} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }

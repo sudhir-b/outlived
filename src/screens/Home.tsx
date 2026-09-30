@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Button, C, Icon, Label, Muted, P, Screen, footer } from "../ui";
+import { Button, C, Footer, Icon, Label, Muted, P, Screen, useFooterSpace } from "../ui";
 import { Civil, daysBetween, formatCivil, formatLifespan, today } from "../lib/dates";
 import { Outlive } from "../lib/people";
 
@@ -74,6 +74,7 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
   const ageDays = daysBetween(dob, today());
   const maxDays = Math.max(ageDays, ...sorted.map((o) => o.lifespan)) * 1.06;
   const youPct = (ageDays / maxDays) * 100;
+  const footerSpace = useFooterSpace();
 
   return (
     <Screen style={{ paddingHorizontal: 0 }}>
@@ -81,7 +82,7 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
         <Text style={styles.wordmark}>OUTLASTED</Text>
         <Pressable onPress={onSettings} hitSlop={12}><Icon name="options-outline" size={26} /></Pressable>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: footerSpace }} showsVerticalScrollIndicator={false}>
         <Hero next={next} total={sorted.length} passed={passed} />
         {sorted.length > 0 && (
           <View style={{ marginTop: 34 }}>
@@ -96,9 +97,9 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
           </View>
         )}
       </ScrollView>
-      <View style={footer}>
+      <Footer>
         <Button title={sorted.length ? "Add or remove people" : "Choose people"} onPress={onPick} />
-      </View>
+      </Footer>
     </Screen>
   );
 }
