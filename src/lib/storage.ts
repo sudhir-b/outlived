@@ -6,10 +6,11 @@ export type Settings = {
   picks: string[];
   notifyHour: number;
   notifyMinute: number;
+  askedNotify: boolean; // we've explained reminders and offered to turn them on
 };
 
 const KEY = "outlasted.settings.v1";
-export const DEFAULTS: Settings = { dob: null, picks: [], notifyHour: 9, notifyMinute: 0 };
+export const DEFAULTS: Settings = { dob: null, picks: [], notifyHour: 9, notifyMinute: 0, askedNotify: false };
 
 export async function loadSettings(): Promise<Settings> {
   try {

@@ -14,11 +14,15 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function ensurePermission(): Promise<boolean> {
-  const current = await Notifications.getPermissionsAsync();
-  if (current.granted) return true;
-  const req = await Notifications.requestPermissionsAsync();
-  return req.granted;
+/** Where things stand, without prompting. `canAsk` means iOS will still show its one-time prompt. */
+export async function getPermission(): Promise<{ granted: boolean; canAsk: boolean }> {
+  const p = await Notifications.getPermissionsAsync();
+  return { granted: p.granted, canAsk: !p.granted && p.canAskAgain };
+}
+
+/** Shows the iOS prompt if it hasn't been answered yet; otherwise returns the existing answer straight away. */
+export async function askPermission(): Promise<boolean> {
+  return (await Notifications.requestPermissionsAsync()).granted;
 }
 
 let queue: Promise<number> = Promise.resolve(0);

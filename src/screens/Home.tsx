@@ -41,7 +41,7 @@ function Hero({ next, total, passed }: { next: Outlive | undefined; total: numbe
 function Bar({ o, next, maxDays, youPct }: { o: Outlive; next: boolean; maxDays: number; youPct: number }) {
   const passed = o.daysAway <= 0 && !next;
   const color = next ? C.accent : passed ? C.good : C.future;
-  const right = next ? (o.daysAway === 0 ? "Today" : `${o.daysAway.toLocaleString()} day${o.daysAway === 1 ? "" : "s"}`) : formatLifespan(o.lifespan, o.person.precision);
+  const right = formatLifespan(o.lifespan, o.person.precision);
   return (
     <View style={{ marginBottom: 14 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Alert } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, Linking } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, NavigationContainer, useFocusEffect } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Onboarding } from "./src/screens/Onboarding";
 import { Home } from "./src/screens/Home";
@@ -44,7 +44,20 @@ function EditDobScreen({ navigation }: NativeStackScreenProps<RootParams, "EditD
 }
 
 function HomeScreen({ navigation }: NativeStackScreenProps<RootParams, "Home">) {
-  const { settings, outlives } = useApp();
+  const { settings, outlives, canAskPermission, setAskedNotify, requestPermission } = useApp();
+  // Offer reminders once there's someone to be reminded about, with a line of context first. iOS shows its own prompt
+  // only once, and a "Don't Allow" there can only be undone in the Settings app. Runs when the people sheet closes.
+  useFocusEffect(useCallback(() => {
+    if (!settings.picks.length || !canAskPermission || settings.askedNotify) return;
+    const t = setTimeout(() => {
+      setAskedNotify();
+      Alert.alert("Get a reminder on the day?", "Outlasted can send you a notification on the day you outlast each of them.", [
+        { text: "Not now", style: "cancel" },
+        { text: "Turn on", onPress: () => { requestPermission(); } },
+      ]);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [settings.picks.length, canAskPermission, settings.askedNotify, setAskedNotify, requestPermission]));
   if (!settings.dob) return null;
   return <Home dob={settings.dob} outlives={outlives} onPick={() => navigation.navigate("Pick")} onSettings={() => navigation.navigate("Settings")} />;
 }
@@ -67,7 +80,11 @@ function SettingsScreen({ navigation }: NativeStackScreenProps<RootParams, "Sett
       onChangeTime={setTime}
       onRequestPermission={async () => {
         const ok = await requestPermission();
-        if (!ok) Alert.alert("Notifications are off", "Turn them on for Outlasted in the iPhone Settings app.");
+        if (!ok) Alert.alert("Notifications are off", "Turn them on for Outlasted in the iPhone Settings app.", [
+          { text: "Cancel", style: "cancel" },
+          // UIApplication.openNotificationSettingsURLString: lands on Outlasted's notification switch, not the top of Settings.
+          { text: "Open Settings", onPress: () => { Linking.openURL("app-settings:notifications").catch(() => Linking.openSettings()); } },
+        ]);
       }}
     />
   );

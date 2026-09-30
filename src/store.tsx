@@ -2,16 +2,18 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { AppState } from "react-native";
 import { Settings, saveSettings } from "./lib/storage";
 import { computeOutlive, Outlive, personById } from "./lib/people";
-import { ensurePermission, reschedule } from "./lib/notifications";
+import { askPermission, getPermission, reschedule } from "./lib/notifications";
 import { Civil, today } from "./lib/dates";
 
 type Store = {
   settings: Settings;
   outlives: Outlive[];
   permission: boolean;
+  canAskPermission: boolean;
   setDob: (dob: Civil) => void;
   setPicks: (picks: Set<string>) => void;
   setTime: (hour: number, minute: number) => void;
+  setAskedNotify: () => void;
   requestPermission: () => Promise<boolean>;
 };
 
@@ -25,7 +27,7 @@ export function useApp(): Store {
 
 export function AppProvider({ initial, children }: { initial: Settings; children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(initial);
-  const [permission, setPermission] = useState(false);
+  const [permission, setPermission] = useState({ granted: false, canAsk: false });
   const [ref, setRef] = useState<Civil>(today());
 
   // Recompute "today" when the app comes back to the foreground, so a milestone that passed overnight shows as passed.
@@ -47,27 +49,29 @@ export function AppProvider({ initial, children }: { initial: Settings; children
     saveSettings(next).catch(() => {});
   }, []);
 
-  // Re-plan notifications whenever the inputs change.
+  // Re-plan notifications whenever the inputs change. This only checks permission; asking happens from Home or Settings.
   useEffect(() => {
     if (!settings.dob) return;
     let cancelled = false;
     (async () => {
-      const ok = await ensurePermission();
+      const p = await getPermission();
       if (cancelled) return;
-      setPermission(ok);
-      if (ok) await reschedule(outlives, settings.notifyHour, settings.notifyMinute);
+      setPermission(p);
+      if (p.granted) await reschedule(outlives, settings.notifyHour, settings.notifyMinute);
     })();
     return () => { cancelled = true; };
-  }, [outlives, settings.notifyHour, settings.notifyMinute]);
+  }, [outlives, settings.notifyHour, settings.notifyMinute, permission.granted]);
 
   const store = useMemo<Store>(() => ({
     settings,
     outlives,
-    permission,
+    permission: permission.granted,
+    canAskPermission: permission.canAsk,
     setDob: (dob) => persist({ ...settings, dob }),
     setPicks: (picks) => persist({ ...settings, picks: [...picks] }),
     setTime: (notifyHour, notifyMinute) => persist({ ...settings, notifyHour, notifyMinute }),
-    requestPermission: async () => { const ok = await ensurePermission(); setPermission(ok); return ok; },
+    setAskedNotify: () => persist({ ...settings, askedNotify: true }),
+    requestPermission: async () => { const granted = await askPermission(); setPermission({ granted, canAsk: false }); return granted; },
   }), [settings, outlives, permission, persist]);
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
