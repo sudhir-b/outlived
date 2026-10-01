@@ -36,8 +36,7 @@ function loadPantheon() {
   }
   return parseCsv(readFileSync(csv, "utf8"))
     .filter((r) => r.deathyear && r.wd_id?.startsWith("Q") && r.is_group !== "TRUE" && r.hpi)
-    .sort((a, b) => Number(b.hpi) - Number(a.hpi))
-    .slice(0, PANTHEON_TOP);
+    .sort((a, b) => Number(b.hpi) - Number(a.hpi));
 }
 
 const PANTHEON_THEMES = {
@@ -62,12 +61,15 @@ const MIN_SITELINKS = 100;
 const UA = { "User-Agent": "outlasted-app/1.0 (github.com/sudhir-b/outlived)", Accept: "application/sparql-results+json" };
 
 async function sparql(q, attempt = 1) {
-  const res = await fetch("https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(q), { headers: UA });
-  if (!res.ok) {
-    if (attempt < 3) { await new Promise((r) => setTimeout(r, 3000 * attempt)); return sparql(q, attempt + 1); }
-    throw new Error(`SPARQL ${res.status}: ${await res.text()}`);
+  try {
+    const res = await fetch("https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(q), { headers: UA });
+    if (!res.ok) throw new Error(`SPARQL ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    return (await res.json()).results.bindings;
+  } catch (e) {
+    // The query service also drops connections mid-response, which throws here instead of returning an error status.
+    if (attempt < 5) { await new Promise((r) => setTimeout(r, 3000 * attempt)); return sparql(q, attempt + 1); }
+    throw e;
   }
-  return (await res.json()).results.bindings;
 }
 
 // Phase 1: cheap id list, sitelinks range-scan first.
@@ -80,14 +82,22 @@ SELECT ?p ?sitelinks WHERE {
 }`;
 // Phase 2: details for a batch of ids.
 const detailsQuery = (ids) => `
-SELECT ?p ?pLabel ?desc ?birth ?birthPrec ?death ?deathPrec ?occLabel WHERE {
+SELECT ?p ?pLabel ?desc ?birth ?birthPrec ?bRank ?death ?deathPrec ?dRank ?occLabel WHERE {
   VALUES ?p { ${ids.map((i) => "wd:" + i).join(" ")} }
-  ?p p:P569/psv:P569 [wikibase:timeValue ?birth; wikibase:timePrecision ?birthPrec].
-  ?p p:P570/psv:P570 [wikibase:timeValue ?death; wikibase:timePrecision ?deathPrec].
+  # Skip claims marked deprecated (known to be wrong). Ranking by "preferred" instead swaps exact dates for vaguer
+  # ones (Plato's "c. 428 BC"), and the disputed-dates rule below then drops the person.
+  ?p p:P569 ?bs. ?bs psv:P569 [wikibase:timeValue ?birth; wikibase:timePrecision ?birthPrec]; wikibase:rank ?bRank.
+  ?p p:P570 ?ds. ?ds psv:P570 [wikibase:timeValue ?death; wikibase:timePrecision ?deathPrec]; wikibase:rank ?dRank.
+  FILTER(?bRank != wikibase:DeprecatedRank && ?dRank != wikibase:DeprecatedRank)
   FILTER(?birthPrec >= 9 && ?deathPrec >= 9)
   OPTIONAL { ?p wdt:P106 ?occ. ?occ rdfs:label ?occLabel. FILTER(LANG(?occLabel)="en") }
   OPTIONAL { ?p schema:description ?desc. FILTER(LANG(?desc)="en") }
-  ?p rdfs:label ?pLabel. FILTER(LANG(?pLabel)="en")
+  # Names that are the same in every language often live only under "mul", with the English copy removed
+  # (Einstein, Marie Curie; Mozart and Darwin for a while). Taking English only silently dropped them.
+  OPTIONAL { ?p rdfs:label ?enLabel. FILTER(LANG(?enLabel)="en") }
+  OPTIONAL { ?p rdfs:label ?mulLabel. FILTER(LANG(?mulLabel)="mul") }
+  BIND(COALESCE(?enLabel, ?mulLabel) AS ?pLabel)
+  FILTER(BOUND(?pLabel))
 }`;
 
 const THEMES = {
@@ -109,8 +119,11 @@ function parseTime(t) {
   return { y, m: Math.max(1, Number(m[3])), d: Math.max(1, Number(m[4])) };
 }
 
-const pantheon = loadPantheon();
+const pantheonAll = loadPantheon();
+const pantheon = pantheonAll.slice(0, PANTHEON_TOP);
 const pantheonById = new Map(pantheon.map((r) => [r.wd_id, r]));
+// Everyone Pantheon has, not just the top 5000: only used to choose between competing Wikidata dates.
+const pantheonDates = new Map(pantheonAll.map((r) => [r.wd_id, r]));
 console.log(`pantheon: ${pantheon.length} people`);
 const idRows = await sparql(IDS_QUERY);
 const sitelinksById = new Map(idRows.map((r) => [r.p.value.split("/").pop(), Number(r.sitelinks.value)]));
@@ -127,22 +140,46 @@ const byId = new Map();
 for (const r of rows) {
   const id = r.p.value.split("/").pop();
   let e = byId.get(id);
-  const bp = Number(r.birthPrec.value), dp = Number(r.deathPrec.value);
   if (!e) {
     e = {
-      id, name: r.pLabel.value, desc: (r.desc?.value ?? "").slice(0, 80),
-      birth: parseTime(r.birth.value), birthPrec: bp, death: parseTime(r.death.value), deathPrec: dp,
+      id, name: r.pLabel.value, desc: (r.desc?.value ?? "").slice(0, 80), births: new Map(), deaths: new Map(),
       sitelinks: sitelinksById.get(id) ?? 0, pantheon: pantheonById.get(id), occupations: new Set(),
     };
     byId.set(id, e);
-  } else {
-    // Several claims per date are common; keep the most precise one for each.
-    if (bp > e.birthPrec) { e.birth = parseTime(r.birth.value); e.birthPrec = bp; }
-    if (dp > e.deathPrec) { e.death = parseTime(r.death.value); e.deathPrec = dp; }
   }
+  addClaim(e.births, r.birth.value, r.birthPrec.value, r.bRank.value);
+  addClaim(e.deaths, r.death.value, r.deathPrec.value, r.dRank.value);
   if (r.occLabel) e.occupations.add(r.occLabel.value.toLowerCase());
 }
+
+function addClaim(claims, value, prec, rank) {
+  const preferred = rank.endsWith("PreferredRank") ? 1 : 0;
+  const seen = claims.get(value);
+  claims.set(value, { prec: Number(prec), preferred: Math.max(preferred, seen?.preferred ?? 0) });
+}
+
+// Pantheon's own date ("1784-07-31", "0566-04-08 BC"), or mid-year when it only has the year.
+function pantheonDate(date, year) {
+  const m = /^(\d+)-(\d\d)-(\d\d)( BC)?$/.exec(date ?? "");
+  if (m) return { y: (m[4] ? -1 : 1) * Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
+  return year ? { y: Number(year), m: 7, d: 1 } : null;
+}
+
+// Several claims per date are common. Take the most precise; between equally precise ones, the one Wikidata's editors
+// marked preferred, then the one nearest Pantheon's date, then the earliest. Taking whichever row came first meant a
+// rebuild could flip someone's dates (Bing Crosby has three exact birth dates).
+function chooseClaim(claims, target) {
+  const ord = (t) => t.y * 372 + t.m * 31 + t.d;
+  const near = (t) => (target ? Math.abs(ord(t) - ord(target)) : 0);
+  return [...claims]
+    .map(([value, c]) => ({ t: parseTime(value), ...c }))
+    .sort((a, b) => b.prec - a.prec || b.preferred - a.preferred || near(a.t) - near(b.t) || ord(a.t) - ord(b.t))[0];
+}
 for (const e of byId.values()) {
+  const pan = pantheonDates.get(e.id);
+  const b = chooseClaim(e.births, pantheonDate(pan?.birthdate, pan?.birthyear));
+  const d = chooseClaim(e.deaths, pantheonDate(pan?.deathdate, pan?.deathyear));
+  Object.assign(e, { birth: b.t, birthPrec: b.prec, death: d.t, deathPrec: d.prec });
   const prec = Math.min(e.birthPrec, e.deathPrec);
   e.precision = prec >= 11 ? "day" : prec === 10 ? "month" : "year";
 }
