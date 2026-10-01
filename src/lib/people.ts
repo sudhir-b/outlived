@@ -44,9 +44,13 @@ export function computeOutlive(person: Person, dob: Civil, ref: Civil = today())
   return { person, lifespan, date, daysAway: daysBetween(ref, date) };
 }
 
-/** The Wikidata description minus its trailing "(1685–1750)", since the dates are shown alongside it anyway. */
+/** The Wikidata description without dates in brackets ("(1685–1750)", "(c. 570–632)"); they're shown alongside it anyway. */
 export function describe(p: Person): string {
-  return p.desc.replace(/\s*\([^()]*\d[^()]*\)\s*$/, "").trim();
+  return p.desc
+    .replace(/\s*\((?:c\.|ca\.|fl\.|b\.|d\.|BCE|BC|CE|AD|[\d\s–—\-−?/,.])+\)/g, "")
+    .replace(/\s+([;,.])/g, "$1")
+    .replace(/[\s;,]+$/, "")
+    .trim();
 }
 
 /** The English Wikipedia article. Wikidata redirects from the person's id, so the app doesn't need to ship titles. */

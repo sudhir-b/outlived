@@ -117,7 +117,8 @@ export function Home({ dob, outlives, onPick, onSettings, onPerson }: { dob: Civ
         data={rows}
         keyExtractor={(o) => o.person.id}
         ListHeaderComponent={header}
-        renderItem={({ item }) => <Bar o={item} next={item === next} maxDays={maxDays} youPct={youPct} onPress={() => onPerson(item.person.id)} />}
+        // Everyone you outlast on the next day is "next", not just the first of them.
+        renderItem={({ item }) => <Bar o={item} next={!!next && item.daysAway === next.daysAway} maxDays={maxDays} youPct={youPct} onPress={() => onPerson(item.person.id)} />}
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: footerSpace }}
         showsVerticalScrollIndicator={false}
       />

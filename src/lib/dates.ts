@@ -67,6 +67,17 @@ export function yearsMonths(from: Civil, to: Civil): { years: number; months: nu
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const LONG_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** "1 January 1960", for the date of birth. */
+export function formatCivilLong(c: Civil): string {
+  return `${c.d} ${LONG_MONTHS[c.m - 1]} ${formatYear(c.y)}`;
+}
+
+// Date pickers trade in UTC midnights. In local time, the native date wheel and Hermes can disagree about historical
+// clock changes (Britain stayed on GMT+1 from 1968 to 1971), and a chosen 9 August came back as 8 August.
+export const toUTCDate = (c: Civil) => new Date(Date.UTC(c.y, c.m - 1, c.d));
+export const fromUTCDate = (d: Date): Civil => ({ y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() });
 export function formatYear(y: number): string {
   return y <= 0 ? `${1 - y} BC` : String(y);
 }

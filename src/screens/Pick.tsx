@@ -51,13 +51,12 @@ export function Pick({ dob, picks, onChange, onDone, onInfo, navigation }: {
       onChange(next);
     };
     if (unpicked.length <= CONFIRM_OVER) return add();
+    const already = unpicked.filter((p) => !aheadIds.has(p.id)).length;
     const soon = dob ? unpicked.filter((p) => { const d = computeOutlive(p, dob).daysAway; return d >= 0 && d < 365; }).length : 0;
-    Alert.alert(
-      `Add ${unpicked.length.toLocaleString()} people?`,
-      soon === 0 ? "You won't outlast any of them in the next year." :
-        `You'll outlast ${soon === 1 ? "one" : soon.toLocaleString()} of them in the next year, with a reminder on each day.`,
-      [{ text: "Cancel", style: "cancel" }, { text: "Add them", onPress: add }],
-    );
+    Alert.alert(`Add ${unpicked.length.toLocaleString()} people?`, addAllMessage(unpicked.length, already, soon), [
+      { text: "Cancel", style: "cancel" },
+      { text: "Add them", onPress: add },
+    ]);
   };
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -91,9 +90,7 @@ export function Pick({ dob, picks, onChange, onDone, onInfo, navigation }: {
       {list.length > 1 && unpicked.length > 0 && (
         <Pressable onPress={addAll} style={({ pressed }) => [styles.addAll, pressed && { opacity: 0.7 }]}>
           <Icon name="add-circle-outline" size={24} color={C.accent} />
-          <Text style={styles.addAllText}>
-            {!theme && !q ? `Add everyone (${unpicked.length.toLocaleString()})` : `Add all ${unpicked.length.toLocaleString()}`}
-          </Text>
+          <Text style={styles.addAllText}>{addAllLabel(unpicked.length, !theme && !q, !q && !withOutlasted)}</Text>
         </Pressable>
       )}
     </View>
@@ -151,6 +148,22 @@ export function Pick({ dob, picks, onChange, onDone, onInfo, navigation }: {
   );
 }
 
+/** Without the switch, browsing only lists people you haven't outlasted yet, so the button says that's who it adds. */
+function addAllLabel(n: number, everyone: boolean, notYetOnly: boolean): string {
+  const count = n.toLocaleString();
+  if (everyone) return notYetOnly ? `Add everyone you haven't outlasted (${count})` : `Add everyone (${count})`;
+  return notYetOnly ? `Add all ${count} you haven't outlasted` : `Add all ${count}`;
+}
+
+function addAllMessage(total: number, already: number, soon: number): string {
+  if (already === total) return "You've already outlasted all of them, so they go straight onto your scoreboard.";
+  const you = soon === 0 ? "you won't outlast any" : `you'll outlast ${soon === 1 ? "one" : soon.toLocaleString()}`;
+  const reminders = soon === 0 ? "" : ", with a reminder on each day";
+  return already === 0
+    ? `${you[0].toUpperCase()}${you.slice(1)} of them in the next year${reminders}.`
+    : `You've already outlasted ${already.toLocaleString()} of them. Of the rest, ${you} in the next year${reminders}.`;
+}
+
 function Chip({ label, icon, active, accent, onPress }: { label: string; icon?: "shuffle"; active?: boolean; accent?: boolean; onPress: () => void }) {
   const color = active ? C.bg : accent ? C.accent : C.text;
   return (
@@ -193,7 +206,7 @@ const styles = StyleSheet.create({
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingVertical: 4 },
   switchLabel: { flex: 1, fontSize: 17, color: C.text },
   addAll: { flexDirection: "row", alignItems: "center", gap: 10, alignSelf: "flex-start", paddingVertical: 10, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1.5, borderColor: C.outline },
-  addAllText: { fontSize: 17, fontWeight: "700", color: C.accent },
+  addAllText: { flexShrink: 1, fontSize: 17, fontWeight: "700", color: C.accent },
   row: { flexDirection: "row", alignItems: "center", backgroundColor: C.card, borderRadius: 16, paddingVertical: 12, paddingLeft: 16, paddingRight: 12, marginBottom: 8 },
   name: { fontSize: 20, fontWeight: "700", color: C.text, lineHeight: 25 },
   outlasted: { fontSize: 15, lineHeight: 21, fontWeight: "700", color: C.good, marginTop: 2 },

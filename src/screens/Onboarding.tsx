@@ -2,25 +2,27 @@ import React, { useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { Button, H1, Icon, P, Screen, C } from "../ui";
-import { Civil, fromDate, toDate } from "../lib/dates";
+import { Civil, formatCivilLong, fromUTCDate, toUTCDate, today } from "../lib/dates";
 
-const OLDEST = new Date(1900, 0, 1);
+const OLDEST = toUTCDate({ y: 1900, m: 1, d: 1 });
 
 export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | null; withHeader?: boolean; onDone: (dob: Civil) => void }) {
-  const [date, setDate] = useState<Date>(initial ? toDate(initial) : new Date(1960, 0, 1));
-  const label = date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+  const [dob, setDob] = useState<Civil>(initial ?? { y: 1960, m: 1, d: 1 });
+  const label = formatCivilLong(dob);
+  const latest = toUTCDate(today());
   // Android can't show the wheel inside the page, so a tap opens its own dialog. Spinner style, because paging a calendar back sixty years is a chore.
   // The spinner dialog paints its own button text, ignoring the theme's accent, so the accent is passed in here.
   const openAndroidPicker = () =>
     DateTimePickerAndroid.open({
-      value: date,
+      value: toUTCDate(dob),
       mode: "date",
       display: "spinner",
-      maximumDate: new Date(),
+      timeZoneName: "UTC",
+      maximumDate: latest,
       minimumDate: OLDEST,
       positiveButton: { textColor: C.accent },
       negativeButton: { textColor: C.accent },
-      onValueChange: (_, d) => setDate(d),
+      onValueChange: (_, d) => setDob(fromUTCDate(d)),
     });
 
   return (
@@ -29,13 +31,14 @@ export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | n
       {Platform.OS === "ios" ? (
         <View style={[styles.card, { marginTop: withHeader ? 0 : 32 }]}>
           <DateTimePicker
-            value={date}
+            value={toUTCDate(dob)}
             mode="date"
             display="spinner"
             themeVariant="dark"
-            maximumDate={new Date()}
+            timeZoneName="UTC"
+            maximumDate={latest}
             minimumDate={OLDEST}
-            onValueChange={(_, d) => setDate(d)}
+            onValueChange={(_, d) => setDob(fromUTCDate(d))}
             style={{ height: 216 }}
           />
         </View>
@@ -45,7 +48,7 @@ export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | n
           <Icon name="calendar-outline" size={26} color={C.accent} />
         </Pressable>
       )}
-      <Button title={withHeader ? "Save" : "Continue"} onPress={() => onDone(fromDate(date))} />
+      <Button title={withHeader ? "Save" : "Continue"} onPress={() => onDone(dob)} />
       {Platform.OS === "ios" && <P style={{ marginTop: 24, textAlign: "center" }}>{label}</P>}
     </Screen>
   );

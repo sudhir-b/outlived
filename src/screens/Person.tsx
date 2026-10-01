@@ -47,7 +47,8 @@ function Fact({ label, value, color = C.text }: { label: string; value: string; 
 }
 
 function when(o: Outlive): string {
-  const date = formatCivil(o.date);
+  // As precise as the person's own dates: a lifespan known only to the year can't put you past them on a given day.
+  const date = formatCivil(o.date, o.person.precision);
   const d = o.daysAway;
   if (d === 0) return `Today, ${date}`;
   return d > 0 ? `${date}, in ${span(d)}` : `${date}, ${span(-d)} ago`;

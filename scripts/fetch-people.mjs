@@ -112,6 +112,14 @@ const THEMES = {
   faith: ["religious leader", "theologian", "priest", "pope", "prophet", "saint", "rabbi", "monk", "preacher", "cleric", "bishop"],
 };
 
+// Descriptions show in full on a person's page and in reminders, so the few long ones are cut at a word, not mid-word
+// ("...from 1924 to 19" was what a flat 80-character cut gave Stalin).
+function shorten(text, max = 160) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  return cut.slice(0, cut.lastIndexOf(" ")).replace(/[\s,;:(–-]+$/, "") + "…";
+}
+
 function parseTime(t) {
   // "+1756-01-27T00:00:00Z" or "-0043-03-15T00:00:00Z"
   const m = /^([+-]?)(\d+)-(\d\d)-(\d\d)T/.exec(t);
@@ -142,7 +150,7 @@ for (const r of rows) {
   let e = byId.get(id);
   if (!e) {
     e = {
-      id, name: r.pLabel.value, desc: (r.desc?.value ?? "").slice(0, 80), births: new Map(), deaths: new Map(),
+      id, name: r.pLabel.value, desc: shorten(r.desc?.value ?? ""), births: new Map(), deaths: new Map(),
       sitelinks: sitelinksById.get(id) ?? 0, pantheon: pantheonById.get(id), occupations: new Set(),
     };
     byId.set(id, e);
