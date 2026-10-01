@@ -43,6 +43,21 @@ eas build --platform android --profile production
 ```
 EAS bumps the version code itself. Download the `.aab` from the build page, then in Play Console: Outlasted → Test and release → Testing → Internal testing → Create new release, drop the file in, Next, Save and publish. (`eas submit --platform android --latest` can do this step once a Google service account key is set up in EAS.)
 
+Expo's free queue can take two hours. The same build runs on the Mac in about 15 minutes, signed with the same upload key, if there's 10 GB or so of free disk:
+
+```bash
+ANDROID_HOME=~/Library/Android/sdk JAVA_HOME=$(/usr/libexec/java_home) eas build --platform android --profile production --local --output ~/Downloads/outlasted.aab
+```
+
+Internal testing goes out without review. The closed testing track ("Alpha") is what Google reviews: add the same bundle there from the library (Create new release → Add from library), then Publishing overview → Send changes for review.
+
+To try the exact store build on a phone first, turn the `.aab` into an APK with [bundletool](https://github.com/google/bundletool/releases) and install it over USB:
+
+```bash
+java -jar bundletool.jar build-apks --bundle=outlasted.aab --output=outlasted.apks --mode=universal --ks=$HOME/.android/debug.keystore --ks-pass=pass:android --ks-key-alias=androiddebugkey --key-pass=pass:android
+unzip -o outlasted.apks universal.apk && adb install -r universal.apk
+```
+
 Play re-signs builds with its own key (EAS's key is the upload key), so a phone that has a sideloaded build must uninstall it before installing from Play.
 
 For a quick sideloaded build without the Play Store:
