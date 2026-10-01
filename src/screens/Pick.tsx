@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useState } from "react";
-import { Alert, FlatList, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { Button, C, Footer, Icon, Muted, Screen, useFooterSpace } from "../ui";
 import { PEOPLE, Person, THEMES, computeOutlive, randomPeople, stillAhead } from "../lib/people";
 import { Civil, formatCivil, formatYear } from "../lib/dates";
@@ -33,6 +33,10 @@ export function Pick({ dob, picks, onChange, onDone, onInfo, navigation }: {
   }, [q, theme, picks, browsing]);
   const unpicked = useMemo(() => (theme === "picked" ? [] : list.filter((p) => !picks.has(p.id))), [list, picks, theme]);
 
+  // Leaving this sheet doesn't close Android's keyboard by itself; it stayed up over Home and covered its button.
+  const done = () => { Keyboard.dismiss(); onDone(); };
+  const info = (id: string) => { Keyboard.dismiss(); onInfo(id); };
+
   const toggle = (id: string) => {
     const next = new Set(picks);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -61,7 +65,7 @@ export function Pick({ dob, picks, onChange, onDone, onInfo, navigation }: {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => picks.size > 0 ? <Pressable onPress={clearAll} hitSlop={12} style={styles.barButton}><Text style={styles.clear}>Clear all</Text></Pressable> : null,
-      headerRight: () => <Pressable onPress={onDone} hitSlop={12} style={styles.barButton}><Text style={styles.done}>Done</Text></Pressable>,
+      headerRight: () => <Pressable onPress={done} hitSlop={12} style={styles.barButton}><Text style={styles.done}>Done</Text></Pressable>,
     });
   }, [navigation, picks.size]);
 
@@ -136,13 +140,13 @@ export function Pick({ dob, picks, onChange, onDone, onInfo, navigation }: {
             picked={picks.has(item.id)}
             outlastedOn={dob && !aheadIds.has(item.id) ? computeOutlive(item, dob).date : null}
             onPress={() => toggle(item.id)}
-            onInfo={() => onInfo(item.id)}
+            onInfo={() => info(item.id)}
           />
         )}
         ListEmptyComponent={<Muted style={{ textAlign: "center", marginTop: 40 }}>Nobody matches that.</Muted>}
       />
       <Footer>
-        <Button title={picks.size ? `Done · ${picks.size.toLocaleString()} picked` : "Done"} onPress={onDone} />
+        <Button title={picks.size ? `Done · ${picks.size.toLocaleString()} picked` : "Done"} onPress={done} />
       </Footer>
     </Screen>
   );
