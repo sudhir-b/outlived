@@ -32,6 +32,22 @@ The reviewer notes are in `LISTING.md` too.
 
 After approval he installs from the App Store like any app. If you want it on his phone sooner, TestFlight works: in App Store Connect, TestFlight tab, add his email as an external tester. He installs the TestFlight app and accepts the invite. TestFlight builds expire after 90 days, so the App Store listing is the proper home.
 
+## Android
+
+Until the Play Console account is verified, Android phones get an APK straight from EAS:
+
+```bash
+eas build --platform android --profile preview
+```
+The build page gives a download link (it expires after two weeks; the installed app keeps working). On a Samsung: open the link, allow installs from that source when asked, tap Install, and tap Install anyway if Play Protect objects. Later builds install over the top and keep the user's data, because EAS signs every build with the same key.
+
+Once the Play account is verified, create the app in the Play Console (package `com.sudhirb.outlasted`), then:
+
+```bash
+eas build --platform android --profile production
+```
+Upload that first `.aab` by hand to Testing → Internal testing (Google requires the first upload through the website), and add testers by their Google account email. After that, `eas submit --platform android --latest` sends builds to the internal track, once a Google service account key is set up in EAS. Phones that had the APK need it uninstalled before the Play version installs, unless Play App Signing was set up with the EAS key.
+
 ## Updating the people list
 
 ```bash
