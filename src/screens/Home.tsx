@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Button, C, Footer, Icon, Label, Muted, P, Screen, useFooterSpace } from "../ui";
 import { Civil, daysBetween, formatCivil, formatLifespan, today } from "../lib/dates";
 import { Outlive } from "../lib/people";
 
-function Hero({ next, total, passed }: { next: Outlive | undefined; total: number; passed: number }) {
+function Hero({ next, sameDay, total, passed }: { next: Outlive | undefined; sameDay: number; total: number; passed: number }) {
   if (total === 0) {
     return (
       <View style={styles.hero}>
@@ -18,8 +18,8 @@ function Hero({ next, total, passed }: { next: Outlive | undefined; total: numbe
     return (
       <View style={styles.hero}>
         <Label>SCOREBOARD</Label>
-        <Text style={styles.big}>{passed}</Text>
-        <P style={{ color: C.muted }}>of {total} outlasted. You've beaten everyone on your list.</P>
+        <Text style={styles.big}>{passed.toLocaleString()}</Text>
+        <P style={{ color: C.muted }}>of {total.toLocaleString()} outlasted. You've beaten everyone on your list.</P>
       </View>
     );
   }
@@ -33,17 +33,18 @@ function Hero({ next, total, passed }: { next: Outlive | undefined; total: numbe
       <Text style={[styles.big, { fontSize: size, lineHeight: size }]}>{text}</Text>
       <P style={{ color: C.muted, marginTop: 6 }}>{d === 0 ? "you outlast" : d === 1 ? "day until you outlast" : "days until you outlast"}</P>
       <Text style={styles.name}>{next.person.name}</Text>
+      {sameDay > 0 && <P style={{ color: C.muted }}>and {sameDay === 1 ? "1 other" : `${sameDay.toLocaleString()} others`} the same day</P>}
       <Muted style={{ marginTop: 6 }}>Died at {formatLifespan(next.lifespan, next.person.precision)} · {formatCivil(next.date)}</Muted>
     </View>
   );
 }
 
-function Bar({ o, next, maxDays, youPct }: { o: Outlive; next: boolean; maxDays: number; youPct: number }) {
+function Bar({ o, next, maxDays, youPct, onPress }: { o: Outlive; next: boolean; maxDays: number; youPct: number; onPress: () => void }) {
   const passed = o.daysAway <= 0 && !next;
   const color = next ? C.accent : passed ? C.good : C.future;
   const right = formatLifespan(o.lifespan, o.person.precision);
   return (
-    <View style={{ marginBottom: 14 }}>
+    <Pressable onPress={onPress} style={({ pressed }) => [{ paddingBottom: 14 }, pressed && { opacity: 0.6 }]}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
         <Text style={styles.rowName} numberOfLines={1}>{o.person.name}</Text>
         <Text style={[styles.rowRight, { color: next ? C.accent : passed ? C.good : C.muted }]}>{right}</Text>
@@ -55,7 +56,7 @@ function Bar({ o, next, maxDays, youPct }: { o: Outlive; next: boolean; maxDays:
         {/* Your age marked on each bar. A line down the whole list ran through the names and ages. */}
         <View pointerEvents="none" style={[styles.tick, { left: `${youPct}%` }]} />
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -67,14 +68,44 @@ function YouPill({ pct }: { pct: number }) {
   );
 }
 
-export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outlives: Outlive[]; onPick: () => void; onSettings: () => void }) {
+// Up to this many people you've already outlasted are listed in full; past that they fold into one line,
+// so someone tracking a whole category doesn't scroll through hundreds of them to reach what's next.
+const PASSED_INLINE = 8;
+
+export function Home({ dob, outlives, onPick, onSettings, onPerson }: { dob: Civil; outlives: Outlive[]; onPick: () => void; onSettings: () => void; onPerson: (id: string) => void }) {
   const sorted = useMemo(() => [...outlives].sort((a, b) => a.daysAway - b.daysAway), [outlives]);
-  const next = sorted.find((o) => o.daysAway >= 0);
-  const passed = sorted.filter((o) => o.daysAway < 0).length;
+  const firstAhead = sorted.findIndex((o) => o.daysAway >= 0);
+  const next = firstAhead >= 0 ? sorted[firstAhead] : undefined;
+  const passed = firstAhead >= 0 ? firstAhead : sorted.length;
+  const sameDay = next ? sorted.filter((o) => o.daysAway === next.daysAway).length - 1 : 0;
   const ageDays = daysBetween(dob, today());
-  const maxDays = Math.max(ageDays, ...sorted.map((o) => o.lifespan)) * 1.06;
+  const maxDays = sorted.reduce((m, o) => Math.max(m, o.lifespan), ageDays) * 1.06;
   const youPct = (ageDays / maxDays) * 100;
   const footerSpace = useFooterSpace();
+  const [showPassed, setShowPassed] = useState(false);
+  const folded = passed > PASSED_INLINE;
+  const rows = folded && !showPassed ? sorted.slice(passed) : sorted;
+
+  const header = (
+    <>
+      <Hero next={next} sameDay={sameDay} total={sorted.length} passed={passed} />
+      {sorted.length > 0 && (
+        <View style={{ marginTop: 34 }}>
+          <View style={styles.sectionHead}>
+            <Label>SCOREBOARD</Label>
+            <Text style={styles.score}><Text style={{ color: C.good }}>{passed.toLocaleString()}</Text><Text style={{ color: C.muted }}> of {sorted.length.toLocaleString()}</Text></Text>
+          </View>
+          {folded && (
+            <Pressable onPress={() => setShowPassed(!showPassed)} hitSlop={8} style={styles.fold}>
+              <Text style={styles.foldText}>{passed.toLocaleString()} already outlasted</Text>
+              <Text style={styles.foldAction}>{showPassed ? "Hide" : "Show"}</Text>
+            </Pressable>
+          )}
+          <View style={{ height: 22 }}><YouPill pct={youPct} /></View>
+        </View>
+      )}
+    </>
+  );
 
   return (
     <Screen style={{ paddingHorizontal: 0 }}>
@@ -82,21 +113,14 @@ export function Home({ dob, outlives, onPick, onSettings }: { dob: Civil; outliv
         <Text style={styles.wordmark}>OUTLASTED</Text>
         <Pressable onPress={onSettings} hitSlop={12}><Icon name="options-outline" size={26} /></Pressable>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: footerSpace }} showsVerticalScrollIndicator={false}>
-        <Hero next={next} total={sorted.length} passed={passed} />
-        {sorted.length > 0 && (
-          <View style={{ marginTop: 34 }}>
-            <View style={styles.sectionHead}>
-              <Label>SCOREBOARD</Label>
-              <Text style={styles.score}><Text style={{ color: C.good }}>{passed}</Text><Text style={{ color: C.muted }}> of {sorted.length}</Text></Text>
-            </View>
-            <View style={{ position: "relative", paddingTop: 22 }}>
-              <YouPill pct={youPct} />
-              {sorted.map((o) => <Bar key={o.person.id} o={o} next={o === next} maxDays={maxDays} youPct={youPct} />)}
-            </View>
-          </View>
-        )}
-      </ScrollView>
+      <FlatList
+        data={rows}
+        keyExtractor={(o) => o.person.id}
+        ListHeaderComponent={header}
+        renderItem={({ item }) => <Bar o={item} next={item === next} maxDays={maxDays} youPct={youPct} onPress={() => onPerson(item.person.id)} />}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: footerSpace }}
+        showsVerticalScrollIndicator={false}
+      />
       <Footer>
         <Button title={sorted.length ? "Add or remove people" : "Choose people"} onPress={onPick} />
       </Footer>
@@ -111,6 +135,9 @@ const styles = StyleSheet.create({
   big: { fontSize: 128, lineHeight: 128, fontWeight: "800", color: C.text, letterSpacing: -5, marginTop: 6, fontVariant: ["tabular-nums"] },
   name: { fontSize: 34, lineHeight: 38, fontWeight: "800", color: C.text, letterSpacing: -0.5, marginTop: 2 },
   sectionHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 },
+  fold: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: C.card, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16, marginBottom: 18 },
+  foldText: { fontSize: 17, fontWeight: "700", color: C.good },
+  foldAction: { fontSize: 17, fontWeight: "700", color: C.accent },
   score: { fontSize: 22, fontWeight: "800", fontVariant: ["tabular-nums"] },
   rowName: { fontSize: 17, fontWeight: "700", color: C.text, flexShrink: 1, marginRight: 12 },
   rowRight: { fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
@@ -119,6 +146,6 @@ const styles = StyleSheet.create({
   youPillWrap: { position: "absolute", top: 0, width: 60, marginLeft: -30, alignItems: "center" },
   youPill: { backgroundColor: C.accent, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
   youText: { fontSize: 11, fontWeight: "800", color: C.bg, letterSpacing: 1 },
-  // The dark outline keeps the tick visible where it crosses the amber bar of the next person.
+  // The outline in the background colour keeps the tick visible where it crosses the white bar of the next person.
   tick: { position: "absolute", top: -5, bottom: -5, width: 5, marginLeft: -2.5, borderRadius: 2.5, backgroundColor: C.accent, borderWidth: 1.5, borderColor: C.bg },
 });

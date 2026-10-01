@@ -3,20 +3,19 @@ import { Platform, Pressable, StyleSheet, Text, TextProps, View, ViewProps } fro
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-// Dark, warm palette: ink background, amber for the next milestone, green for the ones already passed.
+// Hearts maroon and white: a maroon ground, white for the next milestone and the main actions, crest gold for the
+// ones already passed. No green: it's the rivals' colour.
 export const C = {
-  bg: "#14110F",
-  card: "#221D19",
-  text: "#F5EFE6",
-  muted: "#A89F92",
-  accent: "#E9A23B",
-  accentSoft: "#3B2E17",
-  line: "#2E2823",
-  track: "#2E2823",
-  future: "#8C8378",
-  good: "#6FD08A",
-  goodSoft: "#1E3326",
-  danger: "#F08C7A",
+  bg: "#59191F",
+  card: "#6B2129",
+  text: "#FFFFFF",
+  muted: "#E3BFC4",
+  accent: "#FFFFFF",
+  line: "#74303A",
+  track: "#74303A",
+  outline: "#8E434D",
+  future: "#B98A91",
+  good: "#F6BE5F",
 };
 
 export type IconName = React.ComponentProps<typeof Ionicons>["name"];

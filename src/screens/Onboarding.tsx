@@ -10,7 +10,7 @@ export function Onboarding({ initial, withHeader, onDone }: { initial: Civil | n
   const [date, setDate] = useState<Date>(initial ? toDate(initial) : new Date(1960, 0, 1));
   const label = date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
   // Android can't show the wheel inside the page, so a tap opens its own dialog. Spinner style, because paging a calendar back sixty years is a chore.
-  // The spinner dialog paints its own button text, ignoring the theme's accent, so the amber is passed in here.
+  // The spinner dialog paints its own button text, ignoring the theme's accent, so the accent is passed in here.
   const openAndroidPicker = () =>
     DateTimePickerAndroid.open({
       value: date,

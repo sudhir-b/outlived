@@ -1,5 +1,5 @@
 // Android dialogs (alerts, the date and time pickers) take their buttons and highlights from the theme's colorAccent,
-// which otherwise defaults to Android's teal. Point it at the app's amber.
+// which otherwise defaults to Android's teal. Point it at the app's accent.
 const { AndroidConfig, withAndroidColors, withAndroidStyles } = require("expo/config-plugins");
 
 module.exports = function withAndroidAccent(config, { color }) {

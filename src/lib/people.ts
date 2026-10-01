@@ -44,6 +44,14 @@ export function computeOutlive(person: Person, dob: Civil, ref: Civil = today())
   return { person, lifespan, date, daysAway: daysBetween(ref, date) };
 }
 
+/** The Wikidata description minus its trailing "(1685–1750)", since the dates are shown alongside it anyway. */
+export function describe(p: Person): string {
+  return p.desc.replace(/\s*\([^()]*\d[^()]*\)\s*$/, "").trim();
+}
+
+/** The English Wikipedia article. Wikidata redirects from the person's id, so the app doesn't need to ship titles. */
+export const wikipediaUrl = (p: Person) => `https://www.wikidata.org/wiki/Special:GoToLinkedPage/enwiki/${p.id}`;
+
 /** People who lived at least as long as you have so far: the only ones left to outlast. */
 export function stillAhead(dob: Civil, ref: Civil = today()): Person[] {
   const age = daysBetween(dob, ref);

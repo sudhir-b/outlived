@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Adaptive icon foreground: the ring, shrunk to sit inside the launcher's safe zone. The maroon is the background colour in app.json. -->
+  <g transform="translate(512 512) scale(0.72) translate(-512 -512)">
+    <circle cx="512" cy="512" r="330" fill="none" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="72"/>
+    <circle cx="512" cy="512" r="330" fill="none" stroke="#FFFFFF" stroke-width="72" stroke-dasharray="1660 2073" stroke-linecap="round" transform="rotate(-90 512 512)"/>
+    <circle cx="512" cy="182" r="58" fill="#F6BE5F"/>
+  </g>
+</svg>

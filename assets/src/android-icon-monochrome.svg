@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Themed (single-colour) launcher icon. Only the alpha counts, so the dot gets a cut-out gap to stay distinct from the ring. -->
+  <defs>
+    <mask id="gap">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <circle cx="512" cy="182" r="84" fill="#000"/>
+    </mask>
+  </defs>
+  <g transform="translate(512 512) scale(0.72) translate(-512 -512)">
+    <g mask="url(#gap)">
+      <circle cx="512" cy="512" r="330" fill="none" stroke="#000" stroke-opacity="0.4" stroke-width="72"/>
+      <circle cx="512" cy="512" r="330" fill="none" stroke="#000" stroke-width="72" stroke-dasharray="1660 2073" stroke-linecap="round" transform="rotate(-90 512 512)"/>
+    </g>
+    <circle cx="512" cy="182" r="58" fill="#000"/>
+  </g>
+</svg>

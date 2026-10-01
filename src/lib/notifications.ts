@@ -1,10 +1,12 @@
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { Linking, Platform } from "react-native";
-import { Outlive } from "./people";
+import { Outlive, describe } from "./people";
 import { ageInWords, toDate } from "./dates";
 
-const IOS_LIMIT = 64;
+// Days with a reminder, scheduled ahead; the app tops them up on every open. iOS keeps at most 64 pending
+// notifications. Android allows 500 alarms per app, so it can look further ahead for someone tracking everyone.
+const LIMIT = Platform.OS === "ios" ? 64 : 150;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -52,7 +54,7 @@ async function ensureChannel(): Promise<void> {
 let queue: Promise<number> = Promise.resolve(0);
 
 /**
- * Cancel everything and schedule the next N future milestones.
+ * Cancel everything and schedule a reminder for each of the next days with a milestone, one per day.
  * Runs one at a time: ticking people quickly would otherwise interleave two runs and leave duplicate reminders.
  */
 export function reschedule(outlives: Outlive[], hour: number, minute: number): Promise<number> {
@@ -65,35 +67,63 @@ async function replan(outlives: Outlive[], hour: number, minute: number): Promis
   await Notifications.cancelAllScheduledNotificationsAsync();
   await ensureChannel();
   const now = Date.now();
-  const upcoming = outlives
-    .filter((o) => o.daysAway >= 0)
-    .sort((a, b) => a.daysAway - b.daysAway)
-    .filter((o) => toDate(o.date, hour, minute).getTime() > now)
-    .slice(0, IOS_LIMIT);
+  // Someone tracking whole categories gets several people on some days; they share that day's reminder.
+  const days = new Map<string, Outlive[]>();
+  for (const o of outlives.filter((x) => x.daysAway >= 0).sort((a, b) => a.daysAway - b.daysAway)) {
+    if (toDate(o.date, hour, minute).getTime() <= now) continue;
+    const key = `${o.date.y}-${o.date.m}-${o.date.d}`;
+    const day = days.get(key);
+    if (day) day.push(o);
+    else if (days.size < LIMIT) days.set(key, [o]);
+  }
 
   let count = 0;
-  for (const o of upcoming) {
+  for (const day of days.values()) {
     try {
-      await schedule(o, hour, minute);
+      await schedule(day, hour, minute);
       count += 1;
     } catch (e) {
-      console.warn(`Could not schedule ${o.person.name} for ${toDate(o.date, hour, minute).toISOString()}: ${String(e)}`);
+      console.warn(`Could not schedule ${day[0].person.name} for ${toDate(day[0].date, hour, minute).toISOString()}: ${String(e)}`);
     }
   }
   return count;
 }
 
-async function schedule(o: Outlive, hour: number, minute: number): Promise<void> {
+const age = (o: Outlive) => ageInWords(o.lifespan, o.person.precision);
+
+function content(day: Outlive[]): Notifications.NotificationContentInput {
+  // The ids let a tap open these people's page (see App.tsx).
+  const data = { ids: day.map((o) => o.person.id) };
+  if (day.length === 1) {
+    const [o] = day;
+    const what = describe(o.person);
+    return {
+      title: `You've outlasted ${o.person.name}`,
+      body: `${what ? `${o.person.name}, ${what},` : o.person.name} died aged ${age(o)}. As of today, you've lived longer.`,
+      data,
+      sound: true,
+    };
+  }
+  const names = day.map((o) => `${o.person.name} (${age(o)})`);
+  const list = names.length <= 4
+    ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+    : `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`;
+  return {
+    title: `You've outlasted ${day.length} people today`,
+    body: `${list}. As of today, you've lived longer than all of them.`,
+    data,
+    sound: true,
+  };
+}
+
+async function schedule(day: Outlive[], hour: number, minute: number): Promise<void> {
+  const { date } = day[0];
   await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `You've outlasted ${o.person.name}`,
-        body: `${o.person.name} died aged ${ageInWords(o.lifespan, o.person.precision)}. As of today, you've lived longer.`,
-        sound: true,
-      },
+      content: content(day),
       // Calendar triggers are iOS-only. Android gets the same moment as a plain date; the app re-plans on every open,
       // so a clock or time zone change is picked up either way.
       trigger: Platform.OS === "ios"
-        ? { type: Notifications.SchedulableTriggerInputTypes.CALENDAR, year: o.date.y, month: o.date.m, day: o.date.d, hour, minute, repeats: false }
-        : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: toDate(o.date, hour, minute), channelId: CHANNEL },
+        ? { type: Notifications.SchedulableTriggerInputTypes.CALENDAR, year: date.y, month: date.m, day: date.d, hour, minute, repeats: false }
+        : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: toDate(date, hour, minute), channelId: CHANNEL },
   });
 }

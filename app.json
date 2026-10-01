@@ -16,9 +16,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#14110F",
+        "backgroundColor": "#59191F",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -31,13 +30,13 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker",
-      ["expo-notifications", { "icon": "./assets/notification-icon.png", "color": "#E9A23B" }],
+      ["expo-notifications", { "icon": "./assets/notification-icon.png", "color": "#9F1930" }],
       "expo-font",
-      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "imageWidth": 200, "backgroundColor": "#14110F" }],
-      ["./plugins/withAndroidAccent", { "color": "#E9A23B" }]
+      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "imageWidth": 200, "backgroundColor": "#59191F" }],
+      ["./plugins/withAndroidAccent", { "color": "#FFFFFF" }]
     ],
     "scheme": "outlasted",
-    "backgroundColor": "#14110F",
+    "backgroundColor": "#59191F",
     "extra": {
       "eas": {
         "projectId": "352bbf38-fdac-4c38-ae40-45d731d49232"

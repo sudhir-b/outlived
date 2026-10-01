@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
   <!-- Google Play feature graphic: the app icon's ring beside the wordmark, in the app's palette. -->
-  <rect width="1024" height="500" fill="#14110F"/>
+  <rect width="1024" height="500" fill="#59191F"/>
   <g transform="translate(240 250) scale(0.42) translate(-512 -512)">
-    <circle cx="512" cy="512" r="330" fill="none" stroke="#2E2823" stroke-width="72"/>
-    <circle cx="512" cy="512" r="330" fill="none" stroke="#E9A23B" stroke-width="72" stroke-dasharray="1660 2073" stroke-linecap="round" transform="rotate(-90 512 512)"/>
-    <circle cx="512" cy="182" r="58" fill="#F5EFE6"/>
+    <circle cx="512" cy="512" r="330" fill="none" stroke="#825257" stroke-width="72"/>
+    <circle cx="512" cy="512" r="330" fill="none" stroke="#FFFFFF" stroke-width="72" stroke-dasharray="1660 2073" stroke-linecap="round" transform="rotate(-90 512 512)"/>
+    <circle cx="512" cy="182" r="58" fill="#F6BE5F"/>
   </g>
-  <text x="450" y="214" fill="#E9A23B" font-family="Avenir Next" font-weight="800" font-size="40" letter-spacing="9">OUTLASTED</text>
-  <text x="448" y="282" fill="#F5EFE6" font-family="Avenir Next" font-weight="700" font-size="50">Outlive the famous,</text>
-  <text x="448" y="344" fill="#F5EFE6" font-family="Avenir Next" font-weight="700" font-size="50">one by one.</text>
+  <text x="450" y="214" fill="#F6BE5F" font-family="Avenir Next" font-weight="800" font-size="40" letter-spacing="9">OUTLASTED</text>
+  <text x="448" y="282" fill="#FFFFFF" font-family="Avenir Next" font-weight="700" font-size="50">Outlive the famous,</text>
+  <text x="448" y="344" fill="#FFFFFF" font-family="Avenir Next" font-weight="700" font-size="50">one by one.</text>
 </svg>
