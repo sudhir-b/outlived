@@ -8,18 +8,11 @@ module.exports = function withAndroidAccent(config, { color }) {
     return c;
   });
   return withAndroidStyles(config, (c) => {
-    // The app theme covers alerts and the clock picker. The birthday wheel is the date-picker library's own dialog
-    // style, which doesn't inherit the app theme; the library leaves SpinnerDatePickerDialog empty for apps to override.
+    // The app theme covers alerts and the clock picker. The birthday wheel uses the date-picker library's own dialog
+    // style, which doesn't inherit the app theme (its buttons are coloured from code, in Onboarding.tsx).
     for (const parent of [AndroidConfig.Styles.getAppThemeGroup(), { name: "SpinnerDatePickerDialog", parent: "SpinnerDatePickerDialogBase" }]) {
       c.modResults = AndroidConfig.Styles.assignStylesValue(c.modResults, { add: true, parent, name: "colorAccent", value: "@color/colorAccent" });
     }
-    // That wheel is Android's own DatePickerDialog, whose buttons read the platform attribute rather than AppCompat's.
-    c.modResults = AndroidConfig.Styles.assignStylesValue(c.modResults, {
-      add: true,
-      parent: { name: "SpinnerDatePickerDialog", parent: "SpinnerDatePickerDialogBase" },
-      name: "android:colorAccent",
-      value: "@color/colorAccent",
-    });
     return c;
   });
 };

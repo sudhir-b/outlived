@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import Constants from "expo-constants";
+import { Linking, Platform } from "react-native";
 import { Outlive } from "./people";
 import { ageInWords, toDate } from "./dates";
 
@@ -25,6 +26,19 @@ export async function askPermission(): Promise<boolean> {
   // Android 13+ only shows its prompt once the app has a notification channel.
   await ensureChannel();
   return (await Notifications.requestPermissionsAsync()).granted;
+}
+
+/** Opens the system screen with Outlasted's notification switch, falling back to the app's settings page. */
+export function openNotificationSettings(): void {
+  const fallback = () => { Linking.openSettings(); };
+  if (Platform.OS === "ios") {
+    // UIApplication.openNotificationSettingsURLString
+    Linking.openURL("app-settings:notifications").catch(fallback);
+    return;
+  }
+  const pkg = Constants.expoConfig?.android?.package;
+  if (!pkg) return fallback();
+  Linking.sendIntent("android.settings.APP_NOTIFICATION_SETTINGS", [{ key: "android.provider.extra.APP_PACKAGE", value: pkg }]).catch(fallback);
 }
 
 const CHANNEL = "milestones";

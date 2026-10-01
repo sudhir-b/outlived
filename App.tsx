@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Linking } from "react-native";
+import { Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DarkTheme, NavigationContainer, useFocusEffect } from "@react-navigation/native";
@@ -10,6 +10,7 @@ import { Pick } from "./src/screens/Pick";
 import { Settings } from "./src/screens/Settings";
 import { loadSettings, Settings as StoredSettings } from "./src/lib/storage";
 import { AppProvider, useApp } from "./src/store";
+import { openNotificationSettings } from "./src/lib/notifications";
 import { C } from "./src/ui";
 
 export type RootParams = {
@@ -81,10 +82,9 @@ function SettingsScreen({ navigation }: NativeStackScreenProps<RootParams, "Sett
       onChangeTime={setTime}
       onRequestPermission={async () => {
         const ok = await requestPermission();
-        if (!ok) Alert.alert("Notifications are off", "Turn them on for Outlasted in the iPhone Settings app.", [
+        if (!ok) Alert.alert("Notifications are off", "Turn them on for Outlasted in your phone's Settings.", [
           { text: "Cancel", style: "cancel" },
-          // UIApplication.openNotificationSettingsURLString: lands on Outlasted's notification switch, not the top of Settings.
-          { text: "Open Settings", onPress: () => { Linking.openURL("app-settings:notifications").catch(() => Linking.openSettings()); } },
+          { text: "Open Settings", onPress: openNotificationSettings },
         ]);
       }}
     />
