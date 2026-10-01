@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, C, Footer, Icon, Muted, Screen, useFooterSpace } from "../ui";
 import { PEOPLE, Person, THEMES, randomPeople, stillAhead } from "../lib/people";
 import { Civil, formatYear } from "../lib/dates";
@@ -73,6 +73,12 @@ export function Pick({ dob, picks, onChange, onDone, navigation }: { dob: Civil 
           autoCorrect={false}
           keyboardAppearance="dark"
         />
+        {/* iOS draws its own clear button (clearButtonMode); Android has none. */}
+        {Platform.OS === "android" && query.length > 0 && (
+          <Pressable onPress={() => setQuery("")} hitSlop={12}>
+            <Icon name="close-circle" size={22} color={C.muted} />
+          </Pressable>
+        )}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 8, alignItems: "center" }} style={{ flexGrow: 0, height: 60 }}>
         <Chip label="Surprise me" icon="shuffle" accent onPress={surprise} />

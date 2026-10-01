@@ -108,6 +108,7 @@ export default function App() {
               headerTintColor: C.accent,
               headerTitleStyle: { color: C.text, fontWeight: "700" },
               headerShadowVisible: false,
+              headerTitleAlign: "center", // Android left-aligns by default; match the iPhone
               contentStyle: { backgroundColor: C.bg },
             }}
           >

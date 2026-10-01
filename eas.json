@@ -4,5 +4,5 @@
     "production": { "autoIncrement": true },
     "preview": { "distribution": "internal", "android": { "buildType": "apk" } }
   },
-  "submit": { "production": {} }
+  "submit": { "production": { "android": { "track": "internal" } } }
 }

@@ -26,8 +26,10 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker",
-      "expo-notifications",
-      "expo-font"
+      ["expo-notifications", { "icon": "./assets/notification-icon.png", "color": "#E9A23B" }],
+      "expo-font",
+      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "imageWidth": 200, "backgroundColor": "#14110F" }],
+      ["./plugins/withAndroidAccent", { "color": "#E9A23B" }]
     ],
     "scheme": "outlasted",
     "backgroundColor": "#14110F",
