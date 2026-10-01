@@ -1,8 +1,10 @@
 import React from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { Button, C, Icon, Muted, Screen } from "../ui";
 import { Civil, formatCivil } from "../lib/dates";
+
+const PRIVACY_URL = "https://github.com/sudhir-b/outlived/blob/main/PRIVACY.md";
 
 export function Settings({
   dob, hour, minute, permission, onChangeDob, onChangeTime, onRequestPermission,
@@ -49,6 +51,14 @@ export function Settings({
         {permission ? "On the day you outlast someone, you'll get a notification at this time." : "Notifications are off, so reminders can't reach you."}
       </Muted>
       {!permission && <View style={{ marginTop: 14 }}><Button title="Turn on notifications" secondary onPress={onRequestPermission} /></View>}
+
+      {/* Google Play requires the privacy policy to be reachable from inside the app, not just the store listing. */}
+      <View style={[styles.group, { marginTop: 28 }]}>
+        <Pressable onPress={() => Linking.openURL(PRIVACY_URL)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+          <Text style={styles.label}>Privacy policy</Text>
+          <Icon name="open-outline" size={20} color={C.muted} />
+        </Pressable>
+      </View>
     </Screen>
   );
 }
