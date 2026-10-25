@@ -1,5 +1,5 @@
 import raw from "../data/people.json";
-import { Civil, Precision, lifespanDays, outliveDate, daysBetween, today } from "./dates";
+import { Civil, Precision, addMonths, effective, lifespanDays, outliveDate, daysBetween, today } from "./dates";
 
 export type Person = {
   id: string;
@@ -15,7 +15,6 @@ export type Person = {
 export const PEOPLE: Person[] = raw as Person[];
 const byId = new Map(PEOPLE.map((p) => [p.id, p]));
 export const personById = (id: string) => byId.get(id);
-const lifespans = new Map(PEOPLE.map((p) => [p.id, lifespanDays(p.birth, p.death, p.precision)]));
 
 export const THEMES: { key: string; label: string; emoji: string }[] = [
   { key: "sixties", label: "Died in their 60s", emoji: "⏳" },
@@ -38,9 +37,17 @@ export type Outlive = {
   daysAway: number;      // negative = already passed
 };
 
+// Dates known only to the year or month give an age, not a count of days: "about 60" means your 60th birthday.
+// Adding 60 years' worth of days instead landed a day either side of it, depending on where the leap years fell.
+function outlastDate(p: Person, dob: Civil, lifespan: number): Civil {
+  if (p.precision === "day") return outliveDate(dob, lifespan);
+  const b = effective(p.birth, p.precision), d = effective(p.death, p.precision);
+  return addMonths(dob, (d.y - b.y) * 12 + (d.m - b.m));
+}
+
 export function computeOutlive(person: Person, dob: Civil, ref: Civil = today()): Outlive {
   const lifespan = lifespanDays(person.birth, person.death, person.precision);
-  const date = outliveDate(dob, lifespan);
+  const date = outlastDate(person, dob, lifespan);
   return { person, lifespan, date, daysAway: daysBetween(ref, date) };
 }
 
@@ -58,8 +65,7 @@ export const wikipediaUrl = (p: Person) => `https://www.wikidata.org/wiki/Specia
 
 /** People who lived at least as long as you have so far: the only ones left to outlast. */
 export function stillAhead(dob: Civil, ref: Civil = today()): Person[] {
-  const age = daysBetween(dob, ref);
-  return PEOPLE.filter((p) => lifespans.get(p.id)! >= age);
+  return PEOPLE.filter((p) => computeOutlive(p, dob, ref).daysAway >= 0);
 }
 
 /** Surprise me draws from the well-known end of the list so picks are people he will have heard of. */

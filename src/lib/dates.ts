@@ -53,6 +53,14 @@ export function outliveDate(dob: Civil, days: number): Civil {
   return civilFromDays(daysFromCivil(dob) + days);
 }
 
+/** Adds calendar months, keeping the day of the month but clamping to its last day (29 Feb + 12 months = 28 Feb). */
+export function addMonths(c: Civil, months: number): Civil {
+  const total = c.y * 12 + (c.m - 1) + months;
+  const y = Math.floor(total / 12), m = total - y * 12 + 1;
+  const last = daysFromCivil({ y: m === 12 ? y + 1 : y, m: m === 12 ? 1 : m + 1, d: 1 }) - daysFromCivil({ y, m, d: 1 });
+  return { y, m, d: Math.min(c.d, last) };
+}
+
 export function daysBetween(a: Civil, b: Civil): number {
   return daysFromCivil(b) - daysFromCivil(a);
 }
